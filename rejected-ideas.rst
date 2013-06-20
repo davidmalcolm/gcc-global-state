@@ -1,6 +1,16 @@
 Appendix 4: Rejected Ideas
 --------------------------
 
+Passes are not yet to be invoked on a specific function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+I had hoped that the execute callback of passes could gain a `function *`
+parameter.  Initially this would be `cfun`, but this would give us a way of
+eventually eliminating `cfun`.
+
+Plan: don't do this for this milestone (see notes on cfun on the issues
+with this).
+
+
 Rejected idea: On-stack roots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 I wrote up some ideas on how to do on-stack GC roots.

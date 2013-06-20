@@ -52,6 +52,9 @@ rebasing as passes get moved around by other gcc developers.  So if I am
 destined for a branch, I'd at least want the option of tactical merges
 here and there.
 
+Question: if it's a branch, is it a branch in git, or a branch in svn?
+(or both, somehow?)
+
 
 Bikeshedding: "universe" vs "context"
 -------------------------------------
@@ -154,9 +157,7 @@ be methods of a new `class callgraph`.
 
 See below in "Middle-end classes" for how this looks.
 
-Status
-^^^^^^
-Not yet ready; remaining work:
+Status: Not yet ready; remaining work:
 
   * integrate the class with GTY
   * integrate the class with "universe"
@@ -535,15 +536,6 @@ Passes become C++ classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See the notes below under "Pass classes" to see what they look like.
-
-Passes are not yet invoked on a specific function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The execute callback (now a vfunc) could gain a `function *` parameter.
-Initially this would be `cfun`, but this would give us a way of eventually
-eliminating `cfun`.
-
-Plan: don't do this for this milestone (see notes of cfun below on the
-difficulties here).
 
 Passes "know" which universe they are in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
