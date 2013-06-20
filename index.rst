@@ -20,6 +20,7 @@ Contents:
    passes.rst
    other-components.rst
    rejected-ideas.rst
+   TODO.rst
 
 
 Indices and tables

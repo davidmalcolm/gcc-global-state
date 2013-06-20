@@ -302,8 +302,3 @@ One other concern is how all of this lines up with GCC 4.9's schedule.
 These big internal reorganizations need to happen in stage 1 of the
 upstream schedule, right?  Not sure where that is calendar-wise, but my
 hope is to get the big reorg changes in sooner rather than later.
-
-`SWITCHABLE_TARGET`
--------------------
-TODO
-
