@@ -177,5 +177,3 @@ This would change the internal prototypes more substantially::
   +   void impl_bar (void);
   + }; // class foo_state
 
-There are some more invasive changes, but I feel they need making
-(e.g. removal of cfun macros).
