@@ -47,7 +47,7 @@ html:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 publish: html
-	scp -r _build/html dmalcolm@fedorapeople.org:public_html/gcc/global-state
+	rsync -avz _build/html/ dmalcolm@fedorapeople.org:public_html/gcc/global-state/
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
