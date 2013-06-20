@@ -9,10 +9,11 @@ Removal of global state from GCC
 Contents:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    requirements.rst
    plan.rst
+   pass-patterns.rst
    singletons.rst
    new-classes.rst
    top-globals.rst
