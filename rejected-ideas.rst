@@ -158,3 +158,36 @@ Alternatively, the state class itself could have the push/pop property::
   }
 
 We're not doing this.
+
+Rejected idea: storing universe refs in scopes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We're not storing universe& in types (like LLVM does), for memory-usage
+reasons.
+
+Every type already has a context, from tree.h::
+
+  #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type_common.context)
+
+  struct GTY(()) tree_type_common {
+     ...
+     tree context;
+     ...
+  };
+
+so one idea I had was that such contexts could gain a universe*, or the
+root context could gain one.
+
+For the non-shared case you'd be doing work to access
+the universe, then ignoring this - so universe-lookup could be done behind
+a macro::
+
+  /* Macro for getting a (universe &) from a type. */
+  #if SHARED_BUILD
+    #define GET_UNIVERSE(TYPE)  get_universe_from_type((TYPE))
+  #else
+    /* Access the global singleton: */
+    #define GET_UNIVERSE(type)  (the_uni)
+  #endif
+
+Rejected, as it involves CPU work and some extra memory; we'll use TLS
+instead.

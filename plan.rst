@@ -231,39 +231,20 @@ calls within optimization passes, and by anything that can access per-pass
 state.
 
 How to get at universe from deep within code that doesn't have easy access
-to it?  (e.g. helper functions and macros)
+to it?  (e.g. helper functions and macros).
 
 LLVM solves this by having every type object have a universe*: you can
 always easily find a type object.  This is probably too expensive
 memory-wise to be acceptable to upstream gcc, so we need a different
 approach.
 
-Every type already has a context, from tree.h::
+I propose we use thread-local store and macros for this::
 
-  #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type_common.context)
-
-  struct GTY(()) tree_type_common {
-     ...
-     tree context;
-     ...
-  };
-
-so perhaps such contexts could gain a universe*, or the root context could
-gain one.   For the non-shared case you'd be doing work to access
-the universe, then ignoring this - so universe-lookup could be done behind
-a macro::
-
-  /* Macro for getting a (universe &) from a type. */
   #if SHARED_BUILD
-    #define GET_UNIVERSE(TYPE)  get_universe_from_type((TYPE))
+     extern __thread universe *uni_ptr;
   #else
-    /* Access the global singleton: */
-    #define GET_UNIVERSE(type)  (the_uni)
+     extern universe the_uni;
   #endif
-
-Alternatively, we could use TLS for this - though I'd prefer to avoid
-relying on TLS (since it means that client code can't share universes
-between threads)::
 
   /* Macro for getting a (universe &) */
   #if SHARED_BUILD
@@ -274,17 +255,14 @@ between threads)::
     #define GET_UNIVERSE()  (the_uni)
   #endif
 
-  #if SHARED_BUILD
-     extern __thread universe *uni_ptr;
-  #else
-     extern universe the_uni;
-  #endif
-
 This approach has the advantage of relative simplicity, and is efficient
 for the non-shared case (where the result of GET_UNIVERSE() will be
 effectively ignored, as everything will be going through "static").
 
-Plan: go with the TLS approach above for the places that need it.
+(I would have prefered to avoid relying on TLS, since it makes client code
+need to take this it account when it manages its own threads, but the
+alternatives are all much clunkier, or introduce unacceptable increases in
+memory usage).
 
 
 Interaction with GCC plugins
@@ -302,6 +280,9 @@ However this is out-of-scope for this iteration.
 
 (perhaps this is analagous to embedding vs extending in the Python world;
 see http://docs.python.org/2/extending/embedding.html).
+
+A plugin that wants to interact with a shared-library build of GCC could
+potentially get at the universe through the GET_UNIVERSE() macro above.
 
 
 Tools
