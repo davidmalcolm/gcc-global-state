@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
+   requirements.rst
    plan.rst
    new-classes.rst
    top-globals.rst
