@@ -224,16 +224,18 @@ directly.  Similarly, many objects have a reference back to their
 
 How do you determine which universe you are in?
 -----------------------------------------------
-Every pass "knows" which universe it is in, so every "execute" hook can
-easily determine which its universe, and put this into the per-pass state.
+Every pass instance "knows" which universe it is in, so every "execute"
+hook can easily determine which its universe, and put this into the
+per-pass state.
+
 Hence the `universe*` is easily accessed during the top-level function
 calls within optimization passes, and by anything that can access per-pass
 state.
 
-How to get at universe from deep within code that doesn't have easy access
-to it?  (e.g. helper functions and macros).
+How do we get at universe from deep within code that doesn't have easy
+access to it?  (e.g. helper functions and macros).
 
-LLVM solves this by having every type object have a universe*: you can
+LLVM solves this by having every type object have a `universe*`: you can
 always easily find a type object.  This is probably too expensive
 memory-wise to be acceptable to upstream gcc, so we need a different
 approach.
