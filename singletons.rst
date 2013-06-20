@@ -4,8 +4,79 @@ A concern about generalizing the code to support multiple states is
 the increased register pressure of passing a context pointer around
 everywhere.
 
-One way to mitigate this is the static-vs-non-static trick from the
-tracer.c thread
+A singleton-removal optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The lowest-boilerplate way of optimizing singletons is to create a new
+optimization pass for GCC:  optimized handling of singletons that have
+been marked as such using a new attribute::
+
+  class __attribute__((singleton("the_foo")) foo
+  {
+  };
+
+The "singleton" attribute tells the C++ compiler that the struct/class
+so-marked will only ever have a single instance, a global variable with
+the given decl.  The compiler should issue an error if this contract is
+violated.  Note that the_foo might be an instance of a *subclass* of foo.
+
+Then all methods of the marked class lose their implicit "this"
+parameters (changing ABI, I know), removing them from all callsites
+also.  Instead, this local is implicitly injected into the
+implementation of each method call::
+
+   foo *this = &the_foo;
+
+So we'd have something like this::
+
+  class SINGLETON_IN_STATIC_BUILD("the_uni") universe
+  {
+  };
+
+For a library build where universe instances are dynamically-created, the
+macro expands away to whitespace, but for a non-library build, this
+would expand to the attribute.
+
+This thus:
+
+  * saves the register pressure of passing around around the this ptr
+    everywhere when there's only ever one instance
+
+  * allows devirtualization of vfuncs: we *know* the exact subclass of
+    the_foo, so any calls to foo or its subclasses must be the_foo.
+
+  * other optimizations?  (e.g. "exploding" a global struct into global
+    vars for its fields)
+
+I think this could be used in quite a few places e.g. for universe, for
+the pass manager, for the callgraph, for global_options.
+
+I'm also thinking long-term the various tables of hooks should probably
+become C++ objects with vtables, so that we can naturally generalize
+them to be singletons in the static-build case, but potentially have
+several in the gcc-as-library case.
+
+I have a crude (unposted) patch for this already working in the GCC C++
+frontend: it implicitly adds the "static" keyword throughout any classes
+that have the singleton attribute.  This gives the saving of register
+pressure, but doesn't allow virtual functions.
+
+Note that you can only remove `(foo*)` params from code where you're
+guaranteed that all users saw the attribute e.g. from methods of foo and
+its subclasses.  You can't remove them from other functions since such
+functions might be declared in a translation unit that doesn't see the full
+class declaration, and thus doesn't see the attribute.
+
+gengtype may need a little tweaking to help find the GTY markers in
+class declarations::
+
+  class GTY((user)) SINGLETON_IN_STATIC_BUILD(the_uni) universe
+  {
+  }; // class universe
+
+Other ways to optimize singletons
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Another way to mitigate the function->class move is the static-vs-non-static
+trick from the tracer.c thread
 http://gcc.gnu.org/ml/gcc-patches/2013-05/msg01351.html::
 
 
@@ -122,13 +193,6 @@ it in a macro.
 
 Are there other approaches?
 
-Plan: I'm thinking that we should use a dual approach:
-
-  * rth's approach for "per-invocation" state
-
-  * the MAYBE_STATIC approach for state that needs to be referenced
-    by a pass or by the universe/context object.
-
 FWIW I favor putting extra space between the MAYBE_STATIC and the decl,
 breaking things up a little makes it easier for me to read the code::
 
@@ -235,59 +299,15 @@ TODO: experience in gdb for each variant?
 TODO: experience in valgrind for each variant?
 TODO: what about GC-owned objects and the (lack of) stack roots?
 
+Plan
+^^^^
+I'm thinking that if the singleton attribute is acceptable we should use it
+throughout: it avoids lots of ugly preprocessor hackery.
 
-A singleton-removal optimization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Another approach is to create a new optimization pass for GCC:  optimized
-handling of singletons that have been marked as such using a new attribute::
+Otherwise we should use a dual approach:
 
-  class foo
-  {
-  } __attribute__((singleton("the_foo"));
+  * rth's approach for "per-invocation" state
 
-The "singleton" attribute tells the C++ compiler that the struct/class
-so-marked will only ever have a single instance, a global variable with
-the given decl.  Note that the_foo might be a subclass of foo.  The
-compiler should issue an error if this contract is violated.
-
-Then all methods of the marked class lose their implicit "this"
-parameters (changing ABI, I know), removing them from all callsites
-also.  Instead, this local is implicitly injected into the
-implementation of each method call::
-
-   foo *this = &the_foo;
-
-So we'd have something like this::
-
-  class universe
-  {
-  } SINGLETON_IN_STATIC_BUILD("the_uni");
-
-For a library build where universe instances are dynamically-created, the
-macro expands away to whitespace, but for a non-library build, this
-would expand to the attribute.
-
-This thus:
-
-  * saves the register pressure of passing around around the this ptr
-    everywhere when there's only ever one instance
-
-  * allows devirtualization of vfuncs: we *know* the exact subclass of
-    the_foo, so any calls to foo or its subclasses must be the_foo.
-
-  * other optimizations?  (e.g. "exploding" a global struct into global
-    vars for its fields)
-
-I think this could be used in quite a few places e.g. for universe, for
-the pass manager, for the callgraph, for global_options.
-
-I'm also thinking long-term the various tables of hooks should probably
-become C++ objects with vtables, so that we can naturally generalize
-them to be singletons in the static-build case, but potentially have
-several in the gcc-as-library case.
-
-Clearly if we go for this one, writing the implementation is a
-significant task.
-
-
+  * the MAYBE_STATIC approach for state that needs to be referenced
+    by a pass or by the universe/context object.
 
