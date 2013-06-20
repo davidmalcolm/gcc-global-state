@@ -113,8 +113,8 @@ Ultimately we may want to pass in something more restrictive e.g. just
 a `gc_heap&` so that objects don't get tightly coupled.
 
 
-"universe" objects sit *below* garbage-collection
--------------------------------------------------
+Garbage-collection
+------------------
 Although there's been some talk of removing GTY, I plan to work with the
 existing code, without requiring other features to land, and that means
 dealing with GC and PCH.
@@ -146,7 +146,8 @@ Hence (a) would require all threads to synchronize on GC-safe locations.
 It would also require a substantial rewrite of PCH-handling, since PCH
 files are essentially a dump of the state of the GC-heap.
 
-It seems much simpler to me to go with (b): multiple independent GC-heaps.
+It seems much simpler to me to go with (b): multiple independent GC-heaps,
+where "universe" objects sit *below* garbage-collection.
 
 Proof-of-concept patch posted as http://gcc.gnu.org/ml/gcc-patches/2013-06/msg00878.html
 
