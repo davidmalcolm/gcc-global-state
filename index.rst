@@ -16,6 +16,7 @@ Contents:
    top-globals.rst
    passes.rst
    other-components.rst
+   rejected-ideas.rst
 
 
 Indices and tables
