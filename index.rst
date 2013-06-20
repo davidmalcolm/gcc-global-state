@@ -13,6 +13,7 @@ Contents:
 
    requirements.rst
    plan.rst
+   singletons.rst
    new-classes.rst
    top-globals.rst
    passes.rst
