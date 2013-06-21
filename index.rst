@@ -9,7 +9,7 @@ Removal of global state from GCC
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    requirements.rst
    plan.rst
