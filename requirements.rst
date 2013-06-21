@@ -73,9 +73,7 @@ all tests should continue to have the same results.
 
 No change of license
 --------------------
-GCC's code will continue to be under its existing license.  If you want to
-embed GCC-as-a-shared-library into a program, the licenses must be
-compatible.
+GCC's code will continue to be under its existing license.
 
 Performance
 -----------
