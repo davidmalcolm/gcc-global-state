@@ -1,6 +1,7 @@
 Various kinds of pass-local state
 =================================
-I went through every pass in GCC, looking at what internal state it has.
+I went through every pass in GCC, looking at what internal state each one
+has.
 
 The full details can be seen in Appendix 2, but they can be summarized by
 classifying passes by their "state-management" characteristics:
@@ -264,9 +265,8 @@ appropriately::
                                             new foo_state));
   }
 
-Then the first_instance gets responsibility for managing the pass state
-(e.g. with a pass_vrp_state field), and all the clones can access
-it - thus we have shared state, but the state is "local" to the universe.
+Then the first_instance gets responsibility for creating the pass state
+and all the clones can share it, but the state is "local" to the universe.
 
 If the state is GTY-marked, then the passes need to call the state's gty
 hooks from their gty hooks.

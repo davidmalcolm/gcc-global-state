@@ -4,6 +4,10 @@ A concern about generalizing the code to support multiple states is
 the increased register pressure of passing a context pointer around
 everywhere.
 
+I experimented with various approaches involving heavy use of the
+preprocessor, but I'm leaning towards adding a compiler optimization to
+handle it.
+
 A singleton-removal optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The lowest-boilerplate way of optimizing singletons is to create a new
@@ -236,7 +240,7 @@ Given this code::
       /* Get the universe as "this->ctxt_" */
       FILE *dump_file = ctxt_.dump_file_;
 
-where `dump_file_` is a MAYBE_STATIC field of a context, I'm hoping
+where `dump_file_` is a MAYBE_STATIC field of a context, I'm assuming
 that in a GLOBAL_STATE build the optimizer can
 identify that the `ctxt_` isn't used, and optimize away the lookups
 as equivalent to::
@@ -289,9 +293,6 @@ and thus tmpA and tmpB are unused, so this is effectively just::
 
   int tmpC = callgraph::node_max_uid;
   foo (tmpC);
-
-Is this expectation reasonable?
-
 
 Other aspects
 ^^^^^^^^^^^^^
