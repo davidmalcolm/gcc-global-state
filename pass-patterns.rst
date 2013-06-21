@@ -214,9 +214,10 @@ the `opt_pass` base class gains a clone method::
       virtual opt_pass *clone ();
    }; // class opt_pass
 
-   /* Passes have to explicitly opt-in to be clonable.  */
+   /* Passes have to explicitly opt-in to be clonable,
+      by implementing their own clone method.  */
    opt_pass*
-   opt_pass clone ()
+   opt_pass::clone ()
    {
      internal_error ("pass %s does not support cloning", name);
    }
