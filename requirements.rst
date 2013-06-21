@@ -177,3 +177,10 @@ This would change the internal prototypes more substantially::
   +   void impl_bar (void);
   + }; // class foo_state
 
+
+GCC 4.9 schedule
+----------------
+One other concern is how all of this lines up with GCC 4.9's schedule.
+These big internal reorganizations need to happen in stage 1 of the
+schedule, right?  Not sure where that is calendar-wise, but my
+hope is to get the big reorg changes in sooner rather than later.
