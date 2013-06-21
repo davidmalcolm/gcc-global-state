@@ -29,8 +29,8 @@ whole of the GTK stack has this behavior also, alas).
 I'm focusing on the first item on this list: removing the "rampant use
 of global variables".
 
-Use case
---------
+Use case: Just-In-Time Compilation
+----------------------------------
 Consider a web browser, where each tab or window can have multiple
 threads, say, a thread to render HTML, a thread to run JavaScript, etc.
 The JavaScript code is to be compiled to machine code to get maximum
@@ -43,6 +43,13 @@ that are specific to the JavaScript implementation.
 
 Similar situations arise in other language interpreters that wish to
 compile bytecodes to machine code.
+
+Use case: unit tests for optimization passes
+--------------------------------------------
+Having GCC as a shared library offers the ability to create real unit tests
+for optimization passes, where the test directly constructs a fragment
+of Gimple or RTL, and works on that, asserting properties of the result,
+without having to go through source code.
 
 Scope of the problem
 --------------------
