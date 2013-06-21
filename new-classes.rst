@@ -18,8 +18,8 @@ have more than one of them::
 This allows us to pass a heap around without having to expose the entire
 universe.
 
-The following class is handy for GTY((user)) classes: ensure that you
-implement the GTY hooks::
+The following class is handy for GTY((user)) classes that are in an
+inheritance hierarchy::
 
   class gc_base
   {
@@ -38,7 +38,12 @@ implement the GTY hooks::
     virtual void gt_pch_nx_with_op (gt_pointer_operator op, void *cookie) = 0;
    };
 
-There may be a need for base classes:
+The above virtual functions should only be used for the case where
+inheritance is occurring (I'm only using this for pass instances) - the
+rest of the time the correct hooks for the types should be invoked
+directly, using overloaded `gt_` functions.
+
+There might be a need for base classes:
 
   * `gc_managed` : allocated in a gc heap, and can own GC-references
 
@@ -49,7 +54,7 @@ Frontend Classes
 ^^^^^^^^^^^^^^^^
 These exist in order to encapsulate the various "global_trees" fields::
 
-  class GTY((user)) frontend : public gc_base
+  class GTY((user)) frontend
   {
 
   protected:
@@ -66,11 +71,8 @@ These exist in order to encapsulate the various "global_trees" fields::
   };
 
   /* State and code shared between the C, ObjC and C++ frontends.  */
-  class GTY((user)) c_family_frontend
+  class GTY((user)) c_family_frontend : public frontend
   {
-  public:
-    /* gt methods */
-
   protected:
     c_family_frontend(gc_heap& heap);
 
@@ -81,9 +83,6 @@ These exist in order to encapsulate the various "global_trees" fields::
   /* An instance of the C++ frontend.  */
   class GTY((user)) cp_frontend : public c_family_frontend
   {
-  public:
-    /* gt methods, chaining up to base class */
-
   private:
     MAYBE_STATIC tree cp_global_trees[CPTI_MAX];
   };
@@ -374,7 +373,7 @@ Middle-end classes
 
 Callgraph::
 
-   class GTY((user)) callgraph : public gc_base
+   class GTY((user)) callgraph
    {
    public:
       callgraph(universe &uni);
