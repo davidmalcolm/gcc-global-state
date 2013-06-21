@@ -90,8 +90,9 @@ These exist in order to encapsulate the various "global_trees" fields::
 Pass classes
 ^^^^^^^^^^^^
 
-We introduce some helper structs so that various property and todo flags
-can be self-documenting; these are synactic sugar for wrapping `unsigned int`::
+We could introduce some helper structs so that various property and todo
+flags can be self-documenting; these are synactic sugar for wrapping
+`unsigned int`::
 
   struct required;
   struct provided;
@@ -156,6 +157,63 @@ with::
 
 without needing comments on the fields.
 
+Alternatively we could introduce a metadata class::
+
+  struct pass_metadata
+  {
+    /* Terse name of the pass used as a fragment of the dump file
+       name.  If the name starts with a star, no dump happens. */
+    const char *name;
+
+    /* The -fopt-info optimization group flags as defined in dumpfile.h. */
+    unsigned int optinfo_flags;
+
+    /* The timevar id associated with this pass.  */
+    /* ??? Ideally would be dynamically assigned.  */
+    timevar_id_t tv_id;
+
+    /* Sets of properties input and output from this pass.  */
+    unsigned int properties_required;
+    unsigned int properties_provided;
+    unsigned int properties_destroyed;
+
+    /* Flags indicating common sets things to do before and after.  */
+    unsigned int todo_flags_start;
+    unsigned int todo_flags_finish;
+  }; // struct pass_metadata
+
+since these are shared between all instances of a pass, giving::
+
+  const struct pass_metadata pass_vrp_metadata = {
+    "vrp",                               /* name */
+    OPTGROUP_NONE,                       /* optinfo_flags */
+    TV_TREE_VRP,                         /* tv_id */
+    PROP_ssa,                            /* properties_required */
+    0,                                   /* properties_provided */
+    0,                                   /* properties_destroyed */
+    0,                                   /* todo_flags_start */
+    TODO_cleanup_cfg
+      | TODO_update_ssa
+      | TODO_verify_ssa
+      | TODO_verify_flow                 /* todo_flags_finish */
+  };
+
+  class pass_vrp : public gimple_opt_pass
+  {
+  public:
+    pass_vrp(context &ctxt)
+      : gimple_opt_pass(ctxt, pass_vrp_metadata)
+    {}
+
+    bool has_gate () { return true; }
+    bool gate () { return gate_vrp (); }
+  
+    unsigned int impl_execute () { return execute_vrp (); }
+
+  }; // class pass_vrp
+
+with an extra indirection anytime we look up pass properties.
+
 `struct opt_pass` becomes a base class::
 
   /* Describe one pass; this is the common part shared across different pass
@@ -185,7 +243,7 @@ without needing comments on the fields.
   
     /* This is the code to run. The return value contains
        TODOs to execute in addition to those in TODO_flags_finish.   */
-    virtual bool has_execute () = 0;
+    virtual bool has_execute () { return true; }
     virtual unsigned int impl_execute () = 0;
   
   protected:
