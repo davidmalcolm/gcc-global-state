@@ -272,7 +272,7 @@ access to it?  (e.g. helper functions and macros).
 
 LLVM solves this by having every type object have a `universe*`: you can
 always easily find a type object.  This is probably too expensive
-memory-wise to be acceptable to upstream gcc, so we need a different
+memory-wise to be acceptable to GCC, so we need a different
 approach.
 
 I propose we use thread-local store and macros for this::
