@@ -13,8 +13,8 @@ Contents:
 
    requirements.rst
    plan.rst
-   pass-patterns.rst
    singletons.rst
+   pass-patterns.rst
    new-classes.rst
    top-globals.rst
    passes.rst

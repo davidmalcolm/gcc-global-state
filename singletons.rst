@@ -1,5 +1,8 @@
 Singletons and performance
 ==========================
+The plan calls for *lots* of new classes that will be singletons
+in a non-shared-library build.
+
 A concern about generalizing the code to support multiple states is
 the increased register pressure of passing a context pointer around
 everywhere.
