@@ -222,6 +222,40 @@ state:  if you have a `universe*` you can reach many other useful objects
 directly.  Similarly, many objects have a reference back to their
 `universe*`
 
+Singletons and GTY
+^^^^^^^^^^^^^^^^^^
+Singletons would make natural GC roots, but gengtype only supports pointers
+as GC roots, not structs.
+
+I tried registering the singleton universe using `ggc_register_root_tab`,
+which adds it to `extra_root_vec` - but this is only used by the garbage
+collector - it isn't used by pch.
+
+Hence the various objects referenced through the context never made it
+into the pch file, and it went goes "boom" when pch nukes the heap prior
+to restorating the heap.
+
+ggc_mark_roots traverses
+
+  * gt_ggc_rtab
+  * extra_root_vec
+
+whereas gt_pch_save traverses:
+
+  * gt_ggc_rtab
+  * gt_pch_cache_rtab
+
+Currently there doesn't seem to be a way to add a new callback (or root
+tab) that's used by both (gt_ggc_rtab is constant, written out by
+gengtype).
+
+Hence I think we need to specialcase the singletons inside ggc and pch,
+explicitly calling their traversal hook there at the appropriate times.
+**Hence it makes sense to have a single universe/context object even in a
+global-state build**: this is the single root struct for GGC; its traversal
+hooks lead to every other singleton being traversed.  As we move global
+variables into singletons, gt_ggc_rtab will slowly become empty: the only
+GC root will be the universe/context singleton.
 
 How do you determine which universe you are in?
 -----------------------------------------------

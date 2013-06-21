@@ -311,4 +311,3 @@ Otherwise we should use a dual approach:
 
   * the MAYBE_STATIC approach for state that needs to be referenced
     by a pass or by the universe/context object.
-
