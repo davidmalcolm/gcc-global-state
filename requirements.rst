@@ -29,6 +29,21 @@ whole of the GTK stack has this behavior also, alas).
 I'm focusing on the first item on this list: removing the "rampant use
 of global variables".
 
+Use case
+--------
+Consider a web browser, where each tab or window can have multiple
+threads, say, a thread to render HTML, a thread to run JavaScript, etc.
+The JavaScript code is to be compiled to machine code to get maximum
+speed.  How is each tab to do this?   The author of the web browser
+needs to be able to embed a compiler into the process, where each thread
+might want to do some compiling, each independently of the other
+threads.   The compilation will involve some optimization passes - some
+of them the ones already implemented in GCC, but maybe some extra ones
+that are specific to the JavaScript implementation.
+
+Similar situations arise in other language interpreters that wish to
+compile bytecodes to machine code.
+
 Scope of the problem
 --------------------
 There are about 3500 global variables in GCC, used in slightly over 100000
@@ -56,6 +71,11 @@ Although these changes enable a future gcc-as-a-library, I intend for
 my patches to make no outwardly-observable changes to GCC's behavior:
 all tests should continue to have the same results.
 
+No change of license
+--------------------
+GCC's code will continue to be under its existing license.  If you want to
+embed GCC-as-a-shared-library into a program, the licenses must be
+compatible.
 
 Performance
 -----------
@@ -73,11 +93,13 @@ Some of the concerns have been:
   * performance hit from position-independent code relative to status quo
 
 To be usable as a shared library, code needs to be built into
-position-independent machine code, using one of -fPIC/-fpic, but both of
-these have a performance impact relative to position-dependent code.
+position-independent machine code, using one of `-fPIC` or `-fpic`, but
+both of these have a performance impact relative to position-dependent
+code.
 
 Given this, I think the model is a configure-time switch to enable usage
-as a shared library, which turns on one of -fPIC or -fpic (TODO: which?).
+as a shared library, which turns on one of `-fPIC` or `-fpic`
+(TODO: which?).
 
 The default would be the status quo: position-dependent code, creating
 statically-linked executables.

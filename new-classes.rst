@@ -89,6 +89,12 @@ These exist in order to encapsulate the various "global_trees" fields::
 
 Pass classes
 ^^^^^^^^^^^^
+Passes will become C++ classes so that the gate and execute hooks can refer
+to pass-specific data in a typesafe way.
+
+I've written a script to automate this conversion, but if we're going to
+touch every pass in the code, there are some other cleanups we could do at
+the same time.
 
 We could introduce some helper structs so that various property and todo
 flags can be self-documenting; these are synactic sugar for wrapping

@@ -232,8 +232,9 @@ which adds it to `extra_root_vec` - but this is only used by the garbage
 collector - it isn't used by pch.
 
 Hence the various objects referenced through the context never made it
-into the pch file, and it went goes "boom" when pch nukes the heap prior
-to restorating the heap.
+into the pch file, and it went "boom" due to pch nuking the heap prior
+to restoring the heap from PCH (thus leaving the unreached objects with
+poisoned byte-values).
 
 ggc_mark_roots traverses
 
@@ -249,8 +250,9 @@ Currently there doesn't seem to be a way to add a new callback (or root
 tab) that's used by both (gt_ggc_rtab is constant, written out by
 gengtype).
 
-Hence I think we need to specialcase the singletons inside ggc and pch,
-explicitly calling their traversal hook there at the appropriate times.
+We could add a way to add callbacks to both, but I think we need to
+specialcase the singletons inside ggc and pch, explicitly calling their
+traversal hook there at the appropriate times.
 **Hence it makes sense to have a single universe/context object even in a
 global-state build**: this is the single root struct for GGC; its traversal
 hooks lead to every other singleton being traversed.  As we move global
