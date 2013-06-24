@@ -3,8 +3,7 @@ Requirements
 
 Motivation
 ----------
-Quoting the creator of LLVM (from
-http://www.drdobbs.com/architecture-and-design/the-design-of-llvm/240001128 ),
+Quoting the creator of LLVM:
 
   There are multiple reasons why pieces of GCC cannot be reused as
   libraries, including rampant use of global variables, weakly enforced
@@ -18,7 +17,9 @@ http://www.drdobbs.com/architecture-and-design/the-design-of-llvm/240001128 ),
   structures, and the entire compiler depends on global data structures
   set up by the command line interface.
 
-  -- Chris Lattner (May 29, 2012)
+  -- Chris Lattner (from
+     http://www.drdobbs.com/architecture-and-design/the-design-of-llvm/240001128 ;
+     also in http://www.aosabook.org/en/llvm.html )
 
 He missed a few issues, for example, the fact that xmalloc() calls
 exit() if it fails.  This is very ill-mannered to be doing from inside a
