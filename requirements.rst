@@ -50,7 +50,19 @@ Use case: unit tests for optimization passes
 Having GCC as a shared library offers the ability to create real unit tests
 for optimization passes, where the test directly constructs a fragment
 of Gimple or RTL, and works on that, asserting properties of the result,
-without having to go through source code.
+without having the risk of other optimization passes making changes to the
+code that invalidates the testing.   Multiple tests could be run within one
+process, potentially speeding up such a test suite dramatically when
+compared to the current test suite.
+
+Use case: Static Analysis
+-------------------------
+My own primary interest is in using GCC's code to build a static analysis
+tool for finding bugs in C/C++ code - in my case, for hardening the Fedora
+distribution against security vulnerabilities - though what I build should
+be usable by other Free Software operating systems.  I don't think
+everything I want to do can be done as a plugin, so I'm interested in a
+more modular GCC.
 
 Scope of the problem
 --------------------
