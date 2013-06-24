@@ -74,7 +74,7 @@ functions might be declared in a translation unit that doesn't see the full
 class declaration, and thus doesn't see the attribute.
 
 gengtype may need a little tweaking to help find the GTY markers in
-class declarations::
+class declarations, so that it can handle code like this::
 
   class GTY((user)) SINGLETON_IN_STATIC_BUILD(the_uni) universe
   {
