@@ -62,11 +62,6 @@ become C++ objects with vtables, so that we can naturally generalize
 them to be singletons in the static-build case, but potentially have
 several in the gcc-as-library case.
 
-I have a crude (unposted) patch for this already working in the GCC C++
-frontend: it implicitly adds the "static" keyword throughout any classes
-that have the singleton attribute.  This gives the saving of register
-pressure, but doesn't allow virtual functions.
-
 Note that you can only remove `(foo*)` params from code where you're
 guaranteed that all users saw the attribute e.g. from methods of foo and
 its subclasses.  You can't remove them from other functions since such
@@ -79,6 +74,63 @@ class declarations, so that it can handle code like this::
   class GTY((user)) SINGLETON_IN_STATIC_BUILD(the_uni) universe
   {
   }; // class universe
+
+
+Another singleton-removal optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A simpler way to optimize singletons is an attribute that implicity makes all
+members of a class be `static`, thus eliminating the implicit `this` from all
+methods, which become functions.
+
+This gives the saving of register pressure, but doesn't allow virtual
+functions, but has the virtue of implementation simplicity.
+
+I have an (unposted) patch for this already working in the GCC C++ frontend.
+
+It gives us relatively clean header files::
+
+   /* This will be the case in stages 2 and 3 of a global-state build,
+      (since it typically won't be recognized in stage 1).  */
+
+   #if USING_IMPLICIT_STATIC
+   #define SINGLETON_IN_STATIC_BUILD __attribute__((force_static))
+   #else
+   #define SINGLETON_IN_STATIC_BUILD
+   #endif
+
+   class GTY((user)) SINGLETON_IN_STATIC_BUILD universe
+   {
+   public:
+       /* All of these are implicitly "static".  */
+
+       /* Instance of the garbage collector.  */
+       gc_heap *heap_;
+
+       /* Instance of the callgraph.  */
+       callgraph *cgraph_;
+
+       /* Pass management.  */
+       pipeline *passes_;
+
+       /* Important objects.  */
+       struct gcc_options global_options_;
+       frontend *frontend_;
+       backend *backend_;
+
+       // etc
+   };
+
+It does require all data members to have a definition in some source file ::
+
+   #if USING_IMPLICIT_STATIC
+   gc_heap *universe::heap_;
+   callgraph *universe::cgraph_;
+   pipeline *universe::passes_;
+   struct gcc_options universe::global_options_;
+   frontend *universe::frontend_;
+   backend *universe::backend_;
+   #endif
 
 Other ways to optimize singletons
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
