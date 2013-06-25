@@ -362,8 +362,11 @@ TODO: what about GC-owned objects and the (lack of) stack roots?
 
 Plan
 ^^^^
-I'm thinking that if the singleton attribute is acceptable we should use it
+I'm thinking that if one of the attributes is acceptable we should use it
 throughout: it avoids lots of ugly preprocessor hackery.
+
+The `singleton` attribute requires less boilerplate than the `force_static`
+attribute, but the latter has a simpler internal implementation.
 
 Otherwise we should use a dual approach:
 
