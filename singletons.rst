@@ -17,7 +17,10 @@ The lowest-boilerplate way of optimizing singletons is to create a new
 optimization pass for GCC:  optimized handling of singletons that have
 been marked as such using a new attribute::
 
-  class __attribute__((singleton("the_foo")) foo
+  // Forward decl of the instance:
+  extern class foo the_foo;
+
+  class __attribute__((singleton(the_foo)) foo
   {
   };
 
@@ -35,7 +38,9 @@ implementation of each method call::
 
 So we'd have something like this::
 
-  class SINGLETON_IN_STATIC_BUILD("the_uni") universe
+  extern class universe the_uni;
+
+  class SINGLETON_IN_STATIC_BUILD(the_uni) universe
   {
   };
 
