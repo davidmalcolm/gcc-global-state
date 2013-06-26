@@ -84,9 +84,9 @@ class declarations, so that it can handle code like this::
 Another singleton-removal optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A simpler way to optimize singletons is an attribute that implicity makes all
-members of a class be `static`, thus eliminating the implicit `this` from all
-methods, which become functions.
+A simpler way to optimize singletons is an attribute that implicitly makes
+all members of a class be `static`, thus eliminating the implicit `this`
+from all methods, which become functions.
 
 This gives the saving of register pressure, but doesn't allow virtual
 functions, but has the virtue of implementation simplicity.
