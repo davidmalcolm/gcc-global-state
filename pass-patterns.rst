@@ -298,13 +298,25 @@ the `opt_pass` base class gains a clone method::
 so that when clones are created, the passes can "wire up" the shared state
 appropriately::
 
-  class MAYBE_SINGLETON("the_foo") foo_state
+  namespace {
+
+  class MAYBE_SINGLETON foo_state
   {
     // functions and data for the whole pass
+    int some_field;
   }; // class foo_state
 
-  /* Singleton instance for non-shared build.  */
-  IF_GLOBAL_STATE(extern foo_state the_foo;)
+  } // anon namespace
+
+  /* Global data for the non-shared build.  */
+  #if USING_IMPLICIT_STATIC
+  int foo_state::some_field;
+  #endif
+
+  /* Singleton instance for non-shared build.  This will be an
+     empty dummy object in stages 2 and 3 (once "force_static" is
+     usable).  */
+  IF_GLOBAL_STATE(static foo_state the_foo;)
 
   class pass_foo : public gimple_pass
   {
@@ -338,7 +350,8 @@ appropriately::
   }
 
 Then the first_instance gets responsibility for creating the pass state
-and all the clones can share it, but the state is "local" to the universe.
+and all the clones can share it, but the state is "local" to the universe,
+whilst staying simple and efficient for the "global state" case.
 
 If the state is GTY-marked, then the passes need to call the state's gty
 hooks from their gty hooks.
