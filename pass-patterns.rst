@@ -3,8 +3,9 @@ Various kinds of pass-local state
 I went through every pass in GCC, looking at what internal state each one
 has.
 
-The full details can be seen in Appendix 2, but they can be summarized by
-classifying passes by their "state-management" characteristics:
+The full details can be seen in :ref:`Appendix 2 <passes>`, but they can
+be summarized by classifying passes by their "state-management"
+characteristics:
 
 * Single-instance passes vs multiple-instances passes.  For example,
   `pass_build_cgraph_edges` only appears once in the pass pipeline, whereas

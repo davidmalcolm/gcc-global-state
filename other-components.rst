@@ -1,3 +1,5 @@
+.. _supportlibs:
+
 Appendix 3: Support Libraries
 -----------------------------
 

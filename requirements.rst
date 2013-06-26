@@ -75,15 +75,18 @@ which orders the global variables based on the number of sites
 referencing them during a build of stage1.
 
 Detailed notes on each of the top 40 items in the list can be seen
-in Appendix 1.
+in :ref:`Appendix 1 <topglobals>`.
 
 Detailed notes on internal state for all GCC passes can be seen in
-Appendix 2.
+:ref:`Appendix 2 <passes>`.
 
-Detailed notes on internal state within the support libraries will appear in
-Appendix 3 (i.e. everything that's not in the "gcc" subdirectory).
+Detailed notes on internal state within the support libraries can be seen
+in :ref:`Appendix 3 <supportlibs>`. (i.e. everything that's not in the
+"gcc" subdirectory).
 
 This document doesn't cover binutils (e.g. the GNU assembler) or gdb.
+Note that to fully implement an in-process embedded JIT using GCC would
+require also tackling binutils, since GCC emits assembler.
 
 No Change in Other Functionality
 --------------------------------

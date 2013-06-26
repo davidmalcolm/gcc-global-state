@@ -1,5 +1,8 @@
+.. _topglobals:
+
 Appendix 1: Top 40 globals (by count of usage sites)
 ----------------------------------------------------
+
 These notes are based on r199560 (trunk, 2013-05-31)
 
 `struct recog_data_d recog_data` (11802 sites)

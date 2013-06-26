@@ -1,3 +1,5 @@
+.. _passes:
+
 Appendix 2: Notes on specific passes
 ------------------------------------
 These notes are based on r199560 (trunk, 2013-05-31)
