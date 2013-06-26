@@ -220,6 +220,12 @@ This would change the internal prototypes more substantially::
   +   void impl_bar (void);
   + }; // class foo_state
 
+No New Requirements for Static Build
+------------------------------------
+The plan calls for the use of thread-local-storage in a few places for the
+shared-library build, but such requirements must be confined to the
+shared-library build; they must not be needed in the global-state build,
+since some existing hosts may not support TLS.
 
 GCC 4.9 schedule
 ----------------
