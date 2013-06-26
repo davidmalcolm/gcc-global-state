@@ -301,8 +301,26 @@ This potentially updates `optimization_current_node`, calls the
 
 Status
 ^^^^^^
-Waiting on patch review of
+Removal of the cfun-using macros is approved; see
 http://gcc.gnu.org/ml/gcc-patches/2013-05/msg01878.html
+and http://gcc.gnu.org/ml/gcc-patches/2013-06/msg00780.html
+replacing::
+
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+
+with::
+
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
+
+However, given that cfun will remain accessed via thread-local store
+in a shared-library build, I'd rather work on CFGs, and consolidate the
+TLS CFG lookup at the top of a function, giving::
+
+  struct control_flow_graph &cfg = *cfun->cfg;
+
+  if (cfg.n_basic_blocks_ <= NUM_FIXED_BLOCKS + 1)
+
+Though the above change may give us a route there.
 
 .. Note to self: my working copy for this aspect is
    `gcc-git-remove-cfun-macros`
