@@ -56,37 +56,37 @@ Frontend Classes
 ^^^^^^^^^^^^^^^^
 These exist in order to encapsulate the various "global_trees" fields::
 
-  class GTY((user)) frontend
+  class GTY((user)) MAYBE_STATIC frontend
   {
 
   protected:
     frontend(gc_heap& heap);
 
   protected:
-    MAYBE_STATIC gc_heap& heap_;
+    gc_heap& heap_;
 
-    MAYBE_STATIC tree global_trees[TI_MAX];
-    MAYBE_STATIC tree built_in_attributes[(int) ATTR_LAST];
-    MAYBE_STATIC tree builtin_types[(int) BT_LAST + 1];
-    MAYBE_STATIC struct line_maps *line_table;
+    tree global_trees[TI_MAX];
+    tree built_in_attributes[(int) ATTR_LAST];
+    tree builtin_types[(int) BT_LAST + 1];
+    struct line_maps *line_table;
 
   };
 
   /* State and code shared between the C, ObjC and C++ frontends.  */
-  class GTY((user)) c_family_frontend : public frontend
+  class GTY((user)) MAYBE_STATIC c_family_frontend : public frontend
   {
   protected:
     c_family_frontend(gc_heap& heap);
 
   protected:
-    MAYBE_STATIC tree c_global_trees[CTI_MAX];
+    tree c_global_trees[CTI_MAX];
   };
 
   /* An instance of the C++ frontend.  */
-  class GTY((user)) cp_frontend : public c_family_frontend
+  class GTY((user)) MAYBE_STATIC cp_frontend : public c_family_frontend
   {
   private:
-    MAYBE_STATIC tree cp_global_trees[CPTI_MAX];
+    tree cp_global_trees[CPTI_MAX];
   };
 
 Pass classes
@@ -552,19 +552,22 @@ Backend classes
 
 TODO; ideas include::
 
-  class backend
+  class GTY((user)) MAYBE_STATIC backend
   {
   public:
-     MAYBE_STATIC rtx const_int_rtx_[MAX_SAVED_CONST_INT * 2 + 1];
-     /* with gty hooks in the vfunc */
+    rtx const_int_rtx_[MAX_SAVED_CONST_INT * 2 + 1];
+
+    void gt_ggc_mx ();
+    void gt_pch_nx ();
+    void gt_pch_nx_with_op (gt_pointer_operator op, void *cookie);
 
   };
 
-  class recog
+  class MAYBE_STATIC recog
   {
   public:
-    MAYBE_STATIC int which_alternative;
-    MAYBE_STATIC struct recog_data_d recog_data;
+    int which_alternative;
+    struct recog_data_d recog_data;
   };
 
 
