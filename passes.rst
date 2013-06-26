@@ -15,7 +15,14 @@ Various stats on the core passes (not counting those in subdirs):
 
   * 57 pass structs with a NULL `gate` callback
   * 162 pass structs with a non-NULL `gate` callback
-  * 17 pass structs with a NULL `execute` callback
+  * 17 pass structs with a NULL `execute` callback (specifically:
+    `pass_loop2`, `pass_ipa_lto_gimple_out`, `pass_ipa_lto_finish_out`,
+    `pass_all_early_optimizations`, `pass_all_optimizations`,
+    `pass_all_optimizations_g`, `pass_rest_of_compilation`,
+    `pass_postreload`, `pass_stack_regs`, `pass_tm_init`, the "no-mudflap"
+    variants of `pass_mudflap_1` and `pass_mudflap_2`,
+    `pass_update_address_taken`, `pass_tree_loop`, `pass_graphite`,
+    `pass_build_alias`, `pass_build_ealias`)
   * 202 pass structs with a non-NULL `execute` callback
 
 Locations of other passes:
