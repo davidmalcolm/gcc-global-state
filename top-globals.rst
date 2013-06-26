@@ -606,39 +606,15 @@ Defined in dumpfile.c::
 
   int dump_flags;
 
-Many of these sites are of the form::
+Plan: make dump_flags be a field of the universe, then::
+
+  FILE *dump_file = GET_UNIVERSE().dump_file_;
+  int dump_flags =  GET_UNIVERSE().dump_flags_;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-   {
+    {
       /* use dump_file */
-   }
-
-Idea: an API hook in universe::
-
-      class universe
-      {
-      public:
-         /* ... */
-         FILE *dump_if_details ();
-         /* ... */
-      };
-
-so that you do::
-
-   FILE * dump_file = uni.dump_if_details ();
-
-   if (dump_file)
-
-Not sure if I like this idea; better might be just to make dump_flags be
-a field of the universe, then::
-
-  FILE *dump_file = the_uni.dump_file_;
-  int dump_flags =  the_uni.dump_flags_;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-   {
-      /* use dump_file */
-   }
+    }
 
 preserving the bulk of the existing code (albeit with one big patch to add
 the locals to all scopes that need it).

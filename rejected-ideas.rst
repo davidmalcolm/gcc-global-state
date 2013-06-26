@@ -206,3 +206,30 @@ hooks into a has_HOOK / impl_HOOK pair::
 
 Rejected; instead we'll add flags to the pass metadata: it's much cheaper to
 test than calling a vfunc, and it lets us use "execute" as the vfunc name.
+
+Rejected idea: dump_if_details
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+For sites of the form::
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      /* use dump_file */
+    }
+
+I considered an API hook in universe::
+
+      class universe
+      {
+      public:
+         /* ... */
+         FILE *dump_if_details ();
+         /* ... */
+      };
+
+so that you do::
+
+   FILE * dump_file = uni.dump_if_details ();
+
+   if (dump_file)
+
+But this is over-thinking things, and leads to more invasive patches.
