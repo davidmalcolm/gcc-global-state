@@ -368,7 +368,18 @@ throughout: it avoids lots of ugly preprocessor hackery.
 The `singleton` attribute requires less boilerplate than the `force_static`
 attribute, but the latter has a simpler internal implementation.
 
-Otherwise we should use a dual approach:
+`force_static` is my preferred approach:
+
+  * I have a working implementation.
+  * It's relatively simple internally.
+  * The performance implications are well-known.
+  * It gives us a simple transition path: make code and data into classes
+    with everything explicitly "static" on trunk, then on a branch remove
+    the explicit `static` and use a macro to add `force_static` for the
+    non-shared build.
+
+If we can't use one of the attribute approaches, we could use a dual
+approach:
 
   * rth's approach for "per-invocation" state
 
