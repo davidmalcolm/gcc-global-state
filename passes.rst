@@ -2,6 +2,29 @@ Appendix 2: Notes on specific passes
 ------------------------------------
 These notes are based on r199560 (trunk, 2013-05-31)
 
+Various stats on the core passes (not counting those in subdirs):
+
+  * 219 pass structs of which:
+
+    * 117 of `struct gimple_opt_pass`
+    * 84 of `struct rtl_opt_pass`
+    * 9 of `struct ipa_opt_pass`
+    * 9 of `struct simple_ipa_opt_pass`
+
+  * 57 pass structs with a NULL `gate` callback
+  * 162 pass structs with a non-NULL `gate` callback
+  * 17 pass structs with a NULL `execute` callback
+  * 202 pass structs with a non-NULL `execute` callback
+
+Locations of other passes:
+
+  * `config/epiphany/mode-switch-use.c`
+  * `config/epiphany/resolve-sw-modes.c`
+  * `config/i386/i386.c`
+  * `config/mips/mips.c`
+  * `config/rl78/rl78.c`
+  * `config/sparc/sparc.c`
+
 I've grouped the passes by the source file that the struct describing the
 pass appears in, since that often (but not always) identifies state that's
 shared between passes.
@@ -310,6 +333,40 @@ This appears to be cleaned up after each call, and be built by
 
 Plan: add a reference to it to struct dom_walk_data, and make it a local
 of the execute hook, passed by reference to find_comparison.
+
+`config/epiphany/mode-switch-use.c`: pass_mode_switch_use
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Appears to have no internal (file) state
+
+`config/epiphany/resolve-sw-modes.c`: pass_resolve_sw_modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Appears to have no internal (file) state
+
+config/i386/i386.c: pass_insert_vzeroupper
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Single-instanced RTL pass, added sometimes for i386 target.
+
+TODO
+
+config/mips/mips.c: pass_mips_machine_reorg2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Single-instanced RTL pass, added sometimes for mips target.
+
+TODO
+
+config/rl78/rl78.c: rl78_devirt_pass
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Single-instanced RTL pass, added sometimes for rl78 target.
+
+TODO; execute hook is a call to `rl78_reorg`
+
+
+config/sparc/sparc.c: pass_work_around_errata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Single-instanced RTL pass, added sometimes for sparc target.
+
+TODO
+
 
 `cprop.c`: pass_rtl_cprop
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1099,7 +1156,8 @@ Appears to have no per-file state.
 
 `mode-switching.c`: pass_mode_switching
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Single instance of pass_mode_switching
+There is normally only a single instance of pass_mode_switching; however
+`epiphany.c` adds a target-specific second instance in `epiphany_init`.
 
 Guarded by #ifdef OPTIMIZE_MODE_SWITCHING
 
@@ -1216,7 +1274,8 @@ TODO
 `recog.c`
 ^^^^^^^^^
 * pass_peephole2 (single, rtl)
-* pass_split_all_insns (single, rtl)
+* pass_split_all_insns (normally single-instanced, but epiphany adds a
+  second instance, rtl)
 * pass_split_after_reload (single, rtl)
 * pass_split_before_regstack (single, rtl)
 * pass_split_before_sched2 (single, rtl)
