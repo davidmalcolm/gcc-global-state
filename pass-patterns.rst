@@ -160,7 +160,79 @@ in the shared-library build.
 
 Per-invocation state with no GTY markings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For passes with "per-invocation" state, where there are no GTY markings,
+If we can use the new `force_static` attribute, these become fairly simple:
+use the singleton optimization described elsewhere.
+
+We put an instance of the state on the stack in the execute callback of
+the pass.
+
+In the shared-library build, this is "real" state, whereas in a non-shared
+build this is a dummy empty object, and can be optimized away in favor of
+global state.
+
+We can't have on-stack GC roots, so if there are GTY markings, we need to
+use one of the approaches below.
+
+An example, from `tracer.c`::
+
+  namespace {
+
+  class MAYBE_SINGLETON tracer_state
+  {
+  public:
+    tracer_state();
+
+    bool tail_duplicate ();
+
+  private:
+
+    edge find_best_successor (basic_block);
+    edge find_best_predecessor (basic_block);
+    int find_trace (basic_block, basic_block *);
+    void mark_bb_seen (basic_block bb);
+    bool bb_seen_p (basic_block bb);
+
+  private:
+
+    /* Minimal outgoing edge probability considered for superblock formation.  */
+    int probability_cutoff;
+    int branch_ratio_cutoff;
+
+    /* A bit BB->index is set if BB has already been seen, i.e. it is
+       connected to some trace already.  */
+    sbitmap bb_seen;
+  }; // tracer_state
+
+  } // anon namespace
+
+  /* If we're actually using global state, we need definitions of the
+     global fields. *
+  #if USING_IMPLICIT_STATIC
+  int tracer_state::probability_cutoff;
+  int tracer_state::branch_ratio_cutoff;
+  sbitmap tracer_state::bb_seen;
+  #endif
+
+  /* This is the top-level point within this pass' execution where state
+     exists.  */
+  bool
+  tracer_state::tail_duplicate ()
+  {
+    /* ... snip .. */
+
+    /* In a shared-library build, the state is on the stack.
+       In a non-shared build, this object is empty and redundant and should
+       be optimized away.  */
+    tracer_state state;
+
+    changed = state.tail_duplicate ();
+    /* (this is a synonym of tracer_state::tail_duplicate () in a
+        non-shared build) */
+
+    /* ... snip .. */
+  }
+
+If we can't use the "force_static optimization", we need other approaches.
 I posted a patch for `tracer.c` as:
 http://gcc.gnu.org/ml/gcc-patches/2013-05/msg01318.html
 and the followup:
@@ -174,14 +246,13 @@ http://gcc.gnu.org/ml/gcc-patches/2013-05/msg01415.html
 
 Essentially we put the class in an anonymous namespace, and have a global
 singleton.   The optimizer should be smart enough to see that "this" is
-always &the_singleton and copy-propagate.  If not, we can use the singleton
-optimization described elsewhere.
+always &the_singleton and copy-propagate.
 
 In the shared-library build, we instead put the value on the stack in
 the execute callback of the pass.
 
-We can't have on-stack GC roots, so if there are GTY markings, we need to
-use one of the approaches below.
+In my tests it wasn't clear that the optimizer was always smart enough
+to eliminate the "this", which is why I favor the "force_static" approach.
 
 
 Pass state with GTY markings
