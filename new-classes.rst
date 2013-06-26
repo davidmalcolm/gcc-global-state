@@ -41,9 +41,11 @@ inheritance hierarchy::
 The above virtual functions should only be used for the case where
 inheritance is occurring (I'm only using this for pass instances) - the
 rest of the time the correct hooks for the types should be invoked
-directly, using overloaded `gt_` functions.
+directly, using overloaded `gt_` functions, so that the choice of function
+occurs when gcc is being compiled, not at gcc run-time.
 
-There might be a need for base classes:
+It might be useful to have some empty base classes, to better document GC
+interactions:
 
   * `gc_managed` : allocated in a gc heap, and can own GC-references
 
@@ -218,7 +220,8 @@ since these are shared between all instances of a pass, giving::
 
   }; // class pass_vrp
 
-with an extra indirection anytime we look up pass properties.
+either taking a copy at pass-creation time, or adding an extra indirection
+anytime we look up pass properties.
 
 `struct opt_pass` becomes a base class::
 
