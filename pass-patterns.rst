@@ -358,9 +358,12 @@ hooks from their gty hooks.
 
 More complicated arrangements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For anything more complicated than the above, we'll simply put a reference
-to the shared state into the universe/context object, and have the passes
-locate it there (either at pass creation, or when they run).
+The singleton tricks from above are widely applicable.
+
+For any kind of "state-wiring" more complicated than the above, we'll
+simply put a reference to the shared state into the universe/context
+object, and have the passes locate it there (either at pass creation,
+or when they run).
 
 For example::
 
@@ -379,8 +382,8 @@ For example::
 
    }; // class universe
 
-In a global state these state instances will be singletons and thus global
-variables.  In a shared-library build these state instances will be
+In a global-state build these state instances will be singletons and thus
+global variables.  In a shared-library build these state instances will be
 allocated when the universe is constructed.
 
 If the state is GTY-marked, then the universe needs to call the state's gty
