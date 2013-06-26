@@ -12,7 +12,7 @@ have more than one of them::
 
   class gc_heap
   {
-     // TODO
+     // TODO; see http://gcc.gnu.org/ml/gcc-patches/2013-06/msg00878.html
   };
 
 This allows us to pass a heap around without having to expose the entire
@@ -41,7 +41,7 @@ inheritance hierarchy::
 The above virtual functions should only be used for the case where
 inheritance is occurring (I'm only using this for pass instances) - the
 rest of the time the correct hooks for the types should be invoked
-directly, using overloaded `gt_` functions, so that the choice of function
+directly, using specific `gt_` functions, so that the choice of function
 occurs when gcc is being compiled, not at gcc run-time.
 
 It might be useful to have some empty base classes, to better document GC
