@@ -191,3 +191,18 @@ a macro::
 
 Rejected, as it involves CPU work and some extra memory; we'll use TLS
 instead.
+
+Rejected idea: has_gate and has_execute vfuncs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An earlier version of the conversion of passes to C++ classes dealt with
+the "test for non-NULLness of gate/execute hook" problem by splitting all
+hooks into a has_HOOK / impl_HOOK pair::
+
+    bool has_gate () { return true; }
+    bool gate () { return gate_vrp (); }
+
+    unsigned int has_execute () { return true; }
+    unsigned int impl_execute () { return execute_vrp (); }
+
+Rejected; instead we'll add flags to the pass metadata: it's much cheaper to
+test than calling a vfunc, and it lets us use "execute" as the vfunc name.

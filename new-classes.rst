@@ -91,8 +91,47 @@ These exist in order to encapsulate the various "global_trees" fields::
 
 Pass classes
 ^^^^^^^^^^^^
+Different universes within one GCC process may want to have their own
+compilation passes, so there will be a `class pipeline`, the pass manager,
+with an instance within the universe; a singleton in a non-shared build::
+
+   class universe
+   {
+   public:
+       /* ...snip... */
+
+       /* Pass management.  */
+       MAYBE_STATIC pipeline *passes_;
+
+       /* ...snip... */
+
+   };
+
+The class internals will be in a new header `pipeline.h`; the fields of
+this class will be created via a new `passes.def` file shared by pass
+creation describing the pass hierarchy; see the `pipeline.h` part of
+http://gcc.gnu.org/ml/gcc-patches/2013-04/msg01175.html
+for an idea of what this will look like (though other aspects of the plan
+have changed since that patch was posted).
+
+This makes it relatively easy to examine the pipeline and pass instances in
+the debugger.
+
 Passes will become C++ classes so that the gate and execute hooks can refer
-to pass-specific data in a typesafe way.
+to pass-specific data in a typesafe way (via "this"): they will become
+virtual functions.
+
+Various places in the status-quo check for non-NULLness of the gate/execute
+hooks before calling them.  This isn't directly testable for virtual
+functions, so we will add fields to the pass data indicating whether the
+hooks exist::
+
+    bool has_gate;
+    bool has_execute;
+
+(We could make these bitfields, but there are only a few hundred
+passes, and they are tested many times, so presumably a simple field avoids
+the need for a mask?).
 
 I've written a script to automate this conversion, but if we're going to
 touch every pass in the code, there are some other cleanups we could do at
@@ -188,6 +227,12 @@ Alternatively we could introduce a metadata class::
     /* Flags indicating common sets things to do before and after.  */
     unsigned int todo_flags_start;
     unsigned int todo_flags_finish;
+
+    /* Allow testing for the presence of the corresponding virtual
+       function.  */
+    bool has_gate;
+    bool has_execute;
+
   }; // struct pass_metadata
 
 since these are shared between all instances of a pass, giving::
@@ -200,10 +245,12 @@ since these are shared between all instances of a pass, giving::
     0,                                   /* properties_provided */
     0,                                   /* properties_destroyed */
     0,                                   /* todo_flags_start */
-    TODO_cleanup_cfg
-      | TODO_update_ssa
-      | TODO_verify_ssa
-      | TODO_verify_flow                 /* todo_flags_finish */
+    (TODO_cleanup_cfg
+     | TODO_update_ssa
+     | TODO_verify_ssa
+     | TODO_verify_flow),                /* todo_flags_finish */
+    1,                                   /* has_gate */
+    1                                    /* has_execute */
   };
 
   class pass_vrp : public gimple_opt_pass
@@ -213,10 +260,8 @@ since these are shared between all instances of a pass, giving::
       : gimple_opt_pass(ctxt, pass_vrp_metadata)
     {}
 
-    bool has_gate () { return true; }
     bool gate () { return gate_vrp (); }
-  
-    unsigned int impl_execute () { return execute_vrp (); }
+    unsigned int execute () { return execute_vrp (); }
 
   }; // class pass_vrp
 
@@ -247,13 +292,11 @@ anytime we look up pass properties (the former seems preferable).
   
     /* This pass and all sub-passes are executed only if
        the function returns true.  */
-    virtual bool has_gate () { return false; }
     virtual bool gate () { return true; }
   
     /* This is the code to run. The return value contains
        TODOs to execute in addition to those in TODO_flags_finish.   */
-    virtual bool has_execute () { return true; }
-    virtual unsigned int impl_execute () = 0;
+    virtual unsigned int execute () { return 0; }
   
   protected:
     opt_pass(context &ctxt,
@@ -398,35 +441,39 @@ The other kind of IPA opt pass is more complicated::
   
     /* IPA passes can analyze function body and variable initializers
         using this hook and produce summary.  */
-    virtual bool has_generate_summary () = 0;
-    virtual void impl_generate_summary () = 0;
+    virtual void generate_summary () = 0;
   
     /* This hook is used to serialize IPA summaries on disk.  */
-    virtual bool has_write_summary () = 0;
-    virtual void impl_write_summary () = 0;
+    virtual void write_summary () = 0;
   
     /* This hook is used to deserialize IPA summaries from disk.  */
-    virtual bool has_read_summary () = 0;
-    virtual void impl_read_summary () = 0;
+    virtual void read_summary () = 0;
   
     /* This hook is used to serialize IPA optimization summaries on disk.  */
-    virtual bool has_write_optimization_summary () = 0;
-    virtual void impl_write_optimization_summary () = 0;
+    virtual void write_optimization_summary () = 0;
   
     /* This hook is used to deserialize IPA summaries from disk.  */
-    virtual bool has_read_optimization_summary () = 0;
-    virtual void impl_read_optimization_summary () = 0;
+    virtual void read_optimization_summary () = 0;
   
     /* Hook to convert gimple stmt uids into true gimple statements.  The second
        parameter is an array of statements indexed by their uid. */
-    virtual bool has_stmt_fixup () = 0;
-    virtual void impl_stmt_fixup (struct cgraph_node *, gimple *) = 0;
+    virtual void stmt_fixup (struct cgraph_node *, gimple *) = 0;
   
-    virtual bool has_function_transform () = 0;
-    virtual unsigned int impl_function_transform (struct cgraph_node *) = 0;
+    virtual unsigned int function_transform (struct cgraph_node *) = 0;
   
-    virtual bool has_variable_transform () = 0;
-    virtual void impl_variable_transform (struct varpool_node *) = 0;
+    virtual void variable_transform (struct varpool_node *) = 0;
+
+  public:
+
+    bool has_generate_summary;
+    bool has_write_summary;
+    bool has_read_summary;
+    bool has_write_optimization_summary;
+    bool has_read_optimization_summary;
+    bool has_stmt_fixup;
+    bool has_function_transform;
+    bool has_variable_transform;
+
   
   /* We should eventually make this field private: */
   public:
