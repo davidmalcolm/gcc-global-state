@@ -221,7 +221,7 @@ since these are shared between all instances of a pass, giving::
   }; // class pass_vrp
 
 either taking a copy at pass-creation time, or adding an extra indirection
-anytime we look up pass properties.
+anytime we look up pass properties (the former seems preferable).
 
 `struct opt_pass` becomes a base class::
 
