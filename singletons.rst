@@ -91,7 +91,8 @@ from all methods, which become functions.
 This gives the saving of register pressure, but doesn't allow virtual
 functions, but has the virtue of implementation simplicity.
 
-I have an (unposted) patch for this already working in the GCC C++ frontend.
+I have an patch for this already working in the GCC C++ frontend, posted as:
+http://gcc.gnu.org/ml/gcc-patches/2013-07/msg00017.html
 
 It gives us relatively clean header files::
 
