@@ -159,6 +159,8 @@ My workflow would probably be something like this::
    [david@surprise build-shared]$ popd
 
 What should the configure flag be called?
+See http://gcc.gnu.org/ml/gcc-patches/2013-07/msg00093.html for some
+notes on this.
 
 
 Benchmarking
