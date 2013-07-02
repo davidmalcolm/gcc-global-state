@@ -567,6 +567,8 @@ Plan:
 
   * eliminate the `input_line` and `input_filename` macros
 
+    Patch posted as: http://gcc.gnu.org/ml/gcc-patches/2013-07/msg00072.html
+
   * move `input_location` into universe::
 
       class universe
