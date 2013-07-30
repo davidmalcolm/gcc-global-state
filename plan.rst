@@ -57,8 +57,8 @@ Question: if it's a branch, is it a branch in git, or a branch in svn?
 
 gcc::context
 ------------
-As of FIXME there is a new class `gcc::context`, which is intended to
-encapsulate the state of the compiler.
+As of r201230 in trunk, there is a new class `gcc::context`, which is
+intended to encapsulate the state of the compiler.
 
 The singleton instance is `g`::
 
