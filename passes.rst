@@ -256,8 +256,7 @@ TODO
 
 * pass_build_cgraph_edges (single, gimple)
 * pass_rebuild_cgraph_edges (2 of them, gimple)
-* pass_remove_cgraph_callee_edges (3 of them, and my passes.def missed one;
-  gimple)
+* pass_remove_cgraph_callee_edges (3 of them, gimple)
 
 Appears to have no per-file state.
 
