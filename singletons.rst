@@ -309,7 +309,7 @@ as equivalent to::
    unsigned int
    pass_foo::execute_hook(void)
    {
-      context &unused = this->ctxt;
+      context *unused = this->ctxt;
       FILE *dump_file = context::dump_file_;
 
 and simply do::

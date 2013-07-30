@@ -52,6 +52,17 @@ Ideas I had included:
 I went with "g", for ease of typing.  It can stand for "the global", "gcc",
 or "gnu" as people prefer :)
 
+Rejected idea: Use of C++ references
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Earlier versions of this plan involved C++ references, to express a
+non-NULL pointer that cannot be "reseated" (to change which thing it
+points to).
+
+Given that C++ usage is relatively new to GCC's insides, we won't use this
+syntax, and will instead use pointers (see:
+http://gcc.gnu.org/ml/gcc-patches/2013-07/msg01430.html )
+
 Passes are not yet to be invoked on a specific function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 I had hoped that the execute callback of passes could gain a `function *`

@@ -60,10 +60,10 @@ These exist in order to encapsulate the various "global_trees" fields::
   {
 
   protected:
-    frontend(gc_heap& heap);
+    frontend(gc_heap *heap);
 
   protected:
-    gc_heap& heap_;
+    gc_heap *heap_;
 
     tree global_trees[TI_MAX];
     tree built_in_attributes[(int) ATTR_LAST];
@@ -76,7 +76,7 @@ These exist in order to encapsulate the various "global_trees" fields::
   class GTY((user)) MAYBE_STATIC c_family_frontend : public frontend
   {
   protected:
-    c_family_frontend(gc_heap& heap);
+    c_family_frontend(gc_heap *heap);
 
   protected:
     tree c_global_trees[CTI_MAX];
@@ -185,7 +185,7 @@ with::
   class pass_vrp : public gimple_opt_pass
   {
   public:
-    pass_vrp(context &ctxt)
+    pass_vrp(context *ctxt)
       : gimple_opt_pass(ctxt,
                         "vrp",
                         OPTGROUP_NONE,
@@ -256,7 +256,7 @@ since these are shared between all instances of a pass, giving::
   class pass_vrp : public gimple_opt_pass
   {
   public:
-    pass_vrp(context &ctxt)
+    pass_vrp(context *ctxt)
       : gimple_opt_pass(ctxt, pass_vrp_metadata)
     {}
 
@@ -299,7 +299,7 @@ anytime we look up pass properties (the former seems preferable).
     virtual unsigned int execute () { return 0; }
   
   protected:
-    opt_pass(context &ctxt,
+    opt_pass(context *ctxt,
              enum opt_pass_type type,
              const char *name,
              unsigned int optinfo_flags,
@@ -309,7 +309,7 @@ anytime we look up pass properties (the former seems preferable).
   
   /* We should eventually make these fields private: */
   public:
-    context &ctxt_;
+    context *ctxt_;
   
     /* Optimization pass type.  */
     enum opt_pass_type type;
@@ -354,7 +354,7 @@ There are three simple subclasses that don't add extra fields::
   class gimple_opt_pass : public opt_pass
   {
   public:
-    gimple_opt_pass(context &ctxt,
+    gimple_opt_pass(context *ctxt,
                     const char *name,
                     unsigned int optinfo_flags,
                     timevar_id_t tv_id,
@@ -374,7 +374,7 @@ There are three simple subclasses that don't add extra fields::
   class rtl_opt_pass : public opt_pass
   {
   public:
-    rtl_opt_pass(context &ctxt,
+    rtl_opt_pass(context *ctxt,
                  const char *name,
                  unsigned int optinfo_flags,
                  timevar_id_t tv_id,
@@ -395,7 +395,7 @@ There are three simple subclasses that don't add extra fields::
   class simple_ipa_opt_pass : public opt_pass
   {
   public:
-    simple_ipa_opt_pass(context &ctxt,
+    simple_ipa_opt_pass(context *ctxt,
                         const char *name,
                         unsigned int optinfo_flags,
                         timevar_id_t tv_id,
@@ -422,7 +422,7 @@ The other kind of IPA opt pass is more complicated::
   class ipa_opt_pass_d : public opt_pass
   {
   public:
-    ipa_opt_pass_d(context &ctxt,
+    ipa_opt_pass_d(context *ctxt,
                    const char *name,
                    unsigned int optinfo_flags,
                    timevar_id_t tv_id,

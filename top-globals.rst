@@ -316,9 +316,9 @@ However, given that cfun will remain accessed via thread-local store
 in a shared-library build, I'd rather work on CFGs, and consolidate the
 TLS CFG lookup at the top of a function, giving::
 
-  struct control_flow_graph &cfg = *cfun->cfg;
+  struct control_flow_graph *cfg = *cfun->cfg;
 
-  if (cfg.n_basic_blocks_ <= NUM_FIXED_BLOCKS + 1)
+  if (cfg->n_basic_blocks_ <= NUM_FIXED_BLOCKS + 1)
 
 Though the above change may give us a route there.
 
