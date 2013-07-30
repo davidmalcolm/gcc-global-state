@@ -192,6 +192,36 @@ a macro::
 Rejected, as it involves CPU work and some extra memory; we'll use TLS
 instead.
 
+Rejected idea: GET_UNIVERSE macro
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An earlier version of this proposal had a macro for accessing the global
+context (then named "universe")::
+
+  #if SHARED_BUILD
+     extern __thread universe *uni_ptr;
+  #else
+     extern universe the_uni;
+  #endif
+
+  /* Macro for getting a (universe &) */
+  #if SHARED_BUILD
+    /* Read a thread-local pointer: */
+    #define GET_UNIVERSE()  (*uni_ptr)
+  #else
+    /* Access the global singleton: */
+    #define GET_UNIVERSE()  (the_uni)
+  #endif
+
+At Cauldron 2013 it was pointed out that it's much simpler to have a
+single pointer that's thread-local in the shared build, and avoid macros
+for this, giving just::
+
+  #if SHARED_BUILD
+     extern __thread universe *g;
+  #else
+     extern universe *g;
+  #endif
+
 Rejected idea: has_gate and has_execute vfuncs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 An earlier version of the conversion of passes to C++ classes dealt with

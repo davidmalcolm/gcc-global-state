@@ -277,26 +277,19 @@ always easily find a type object.  This is probably too expensive
 memory-wise to be acceptable to GCC, so we need a different
 approach.
 
-I propose we use thread-local store and macros for this::
+I propose we use thread-local storage for this::
 
-  #if SHARED_BUILD
-     extern __thread universe *uni_ptr;
-  #else
-     extern universe the_uni;
-  #endif
-
-  /* Macro for getting a (universe &) */
   #if SHARED_BUILD
     /* Read a thread-local pointer: */
-    #define GET_UNIVERSE()  (*uni_ptr)
+     extern __thread universe *g;
   #else
-    /* Access the global singleton: */
-    #define GET_UNIVERSE()  (the_uni)
+     /* Access the global singleton: */
+     extern universe *g;
   #endif
 
 This approach has the advantage of relative simplicity, and is efficient
-for the non-shared case (where the result of GET_UNIVERSE() will be
-effectively ignored, as everything will be going through "static").
+for the non-shared case (where the pointer will be effectively ignored,
+as everything will be going through "static").
 
 (I would have prefered to avoid relying on TLS, since it makes client code
 need to take this it account when it manages its own threads, but the
@@ -321,7 +314,7 @@ However this is out-of-scope for this iteration.
 see http://docs.python.org/2/extending/embedding.html).
 
 A plugin that wants to interact with a shared-library build of GCC could
-potentially get at the universe through the GET_UNIVERSE() macro above.
+potentially get at the universe through the `g` pointer above.
 
 
 Tools

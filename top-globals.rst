@@ -189,7 +189,7 @@ to the top of many functions.  Initially this could be of the form::
    void foo(void)
    {
       /* Use the TLS lookup of the universe in lieu of nothing better: */
-      FILE *dump_file = GET_UNIVERSE().dump_file_;
+      FILE *dump_file = g->dump_file_;
 
       /* ... */
 
@@ -275,7 +275,7 @@ lookup in a shared-library build, using a TLS lookup::
    #define cfun (cfun + 0)
    #else
    /* (the "+ 0" ensures it's not a lvalue, so can't be assigned to)  */
-   #define cfun (GET_UNIVERSE().cfun_ + 0)
+   #define cfun (g->cfun_ + 0)
    #endif
 
 This is efficient for the global state case, but leads to thousands of
@@ -362,7 +362,7 @@ within the universe, with const_int_rtx to become a macro::
    /* Make sure the optimizer doesn't do unnecessary work: */
    #define const_int_rtx (backend::const_int_rtx_)
    #else
-   #define const_int_rtx (GET_UNIVERSE().backend_->const_int_rtx_)
+   #define const_int_rtx (g->get_backend ().const_int_rtx_)
    #endif
 
 with the const0_rtx etc remaining as before.
@@ -515,9 +515,9 @@ Plan: add::
 
 to universe, and remove the global.
 
-TODO: what to do about the macros?  Perhaps use GET_UNIVERSE(), so that::
+TODO: what to do about the macros?  Perhaps::
 
-   #define df (GET_UNIVERSE().df_)
+   #define df (g->get_df ())
 
 `struct gcc_target targetm` (1069 sites)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -610,8 +610,8 @@ Defined in dumpfile.c::
 
 Plan: make dump_flags be a field of the universe, then::
 
-  FILE *dump_file = GET_UNIVERSE().dump_file_;
-  int dump_flags =  GET_UNIVERSE().dump_flags_;
+  FILE *dump_file = g->get_dump_file ();
+  int dump_flags =  g->get_dump_flags ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -661,7 +661,7 @@ of the cfun approach: make a field inside universe::
   #if GLOBAL_STATE
   #define crtl (universe::crtl_)
   #else
-  #define crtl (GET_UNIVERSE().crtl_)
+  #define crtl (g->get_crtl ())
   #endif
 
 `union tree_node *[13] integer_types` (846 sites)
