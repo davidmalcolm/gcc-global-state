@@ -1,6 +1,57 @@
 Appendix 4: Rejected Ideas
 --------------------------
 
+Bikeshedding: "universe" vs "context"?
+--------------------------------------
+We needed a name for the thing that encapsulates the state of the compiler.
+
+I flitted between "universe" and "context" for this name.
+
+  * "universe" comes from the term "parallel universe" beloved of sci-fi
+    authors
+
+  * "context" is already used in several places within the code for
+    something else
+
+  * "context" sometimes makes people think of threads.  I don't see that
+    the state needs to be per-thread; it's per-client - a client could
+    have multiple threads all using one bundle-of-state (imposing a lock
+    client-side)
+
+  * "universe" nicely conveys the idea that different universes are
+    separate, that you can't share things between universes.
+
+  * "context" is the more traditional term; "universe" might seem rather
+    weird.
+
+I eventually chose "gcc::context" since:
+
+(a) "universe" had an element of hubris to it.
+
+(b) "universe" would be incorrect, in that it would only cover aspects of
+    state relating to GCC, and doesn't cover e.g. binutils
+
+(c) "gcc::context" (with the namespace) expresses the concept well.
+
+Another bikeshed discussion would have been what to call the global
+singleton instance.
+Ideas I had included:
+
+  * `the_uni`
+
+  * `the_ctxt`
+
+  * `the_ctx`
+
+  * `ctx`
+
+  * `gcc`
+
+  * `g` (minimal typing; there's a `G` in `ggc-page.c`)
+
+I went with "g", for ease of typing.  It can stand for "the global", "gcc",
+or "gnu" as people prefer :)
+
 Passes are not yet to be invoked on a specific function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 I had hoped that the execute callback of passes could gain a `function *`

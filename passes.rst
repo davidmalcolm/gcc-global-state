@@ -1629,7 +1629,7 @@ File state::
    bitmap cfgcleanup_altered_bbs;
       /* exposed in tree-flow.h and used by tree-cfg.c */
 
-Plan: introduce a `class cfg_cleanup_state` and add it to universe, with
+Plan: introduce a `class cfg_cleanup_state` and add it to context, with
 MAYBE_STATIC.
 
 
@@ -1829,7 +1829,7 @@ hence we need to preserve state outside of the passes.
 
 Plan: Create a `class mudflap_state` to hold the state within tree-mudflap.c
 and move the variables into it as MAYBE_STATIC fields.  Have an instance
-owned by the universe.
+owned by the context.
 
 
 `tree-nrv.c`
@@ -1934,11 +1934,11 @@ GC).
 This state is shared between repeated invocations of the pass.
 
 `gimple_init_edge_profiler` is used from outside this file in `profile.c`,
-so perhaps this state needs to be made a per-universe thing.
+so perhaps this state needs to be made a per-context thing.
 Alternatively, we could make it per-pass, and have
 `gimple_init_edge_profiler` poke at it through::
 
-  universe->pipeline->pass_ipa_tree_profile
+  context->pipeline->pass_ipa_tree_profile
 
 
 `tree-sra.c`: pass_sra_early, pass_sra, pass_early_ipa_sra
@@ -1989,13 +1989,13 @@ File variables::
        which is called in two other places in the source tree.  */
 
 The `redirect_edge_var_map_*` API is used in 5 other source files, so this looks
-like it needs to be per-universe state.
+like it needs to be per-context state.
 
 Plan:
 
   * introduce a `class redirect_edge_var_state` (or whatnot) and add to
-    universe, with usual MAYBE_STATIC on both the state member within the
-    universe and the fields of the state class itself.
+    context, with usual MAYBE_STATIC on both the state member within the
+    context and the fields of the state class itself.
 
   * convert the `redirect_edge_var_map_*` API to be methods of said class.
 
@@ -2579,7 +2579,7 @@ State::
        */
 
 Plan: given the non-trivial interactions with other files, put
-this in the universe.
+this in the context.
 
 
 `tree-stdarg.c`: pass_stdarg

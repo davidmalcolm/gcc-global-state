@@ -81,10 +81,10 @@ characteristics:
   the various states within tree-vrp.c
 
   In a shared-library build, we need to ensure that these instances share
-  state *within* a context/universe, but not with other contexts/universes::
+  state *within* a context, but not with other contexts::
 
-    Universe A:                        Universe B:
-    ===========                        ===========
+    Context A:                         Context B:
+    ==========                         ==========
     pass_vrp_0:A                       pass_vrp_0:B
                 ↘                                  ↘
                  pass_vrp_state:A                   pass_vrp_state:B
@@ -92,14 +92,14 @@ characteristics:
     pass_vrp_1:A                       pass_vrp_1:B
 
 * Sometimes state needs to be shared between multiple kinds of pass within a
-  context/universe.
+  context/context.
 
   An example is `tree-vect-generic.c`, where the single-instanced
   pass_lower_vector and pair of pass_lower_vector_ssa instances share
-  state, but only within their respective universes::
+  state, but only within their respective contexts::
 
-    Universe A:                       ║  Universe B:
-    ===========                       ║  ===========
+    Context A:                        ║  Context B:
+    ==========                        ║  ==========
     pass_lower_vector:A────────────╮  ║  pass_lower_vector:B────────────╮
     pass_lower_vector_ssa_0:A────╮ │  ║  pass_lower_vector_ssa_0:B────╮ │
     pass_lower_vector_ssa_1:A──╮ │ │  ║  pass_lower_vector_ssa_1:B──╮ │ │
@@ -148,8 +148,8 @@ http://gcc.gnu.org/ml/gcc-patches/2013-04/msg00182.html
 
 Passes will become C++ classes.
 
-Passes "know" which universe they are in: they will be constructed with
-a `universe&`, stored as a field, making this information easily accessible
+Passes "know" which context they are in: they will be constructed with
+a `context *`, stored as a field, making this information easily accessible
 in the gate and execute hooks.
 
 For each of the above state-management patterns, we move the state into
@@ -268,8 +268,8 @@ State shared by pass instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For the pass_vrp case::
 
-    Universe A:                        Universe B:
-    ===========                        ===========
+    Context A:                         Context B:
+    ==========                         ==========
     pass_vrp_0:A                       pass_vrp_0:B
                 ↘                                  ↘
                  pass_vrp_state:A                   pass_vrp_state:B
@@ -321,7 +321,7 @@ appropriately::
   class pass_foo : public gimple_pass
   {
   public:
-    pass_foo(universe &uni, pass_state *state)
+    pass_foo(context *uni, pass_state *state)
       : state_(state)
     { }
 
@@ -342,7 +342,7 @@ appropriately::
 
   /* Create first instance of pass, with its own state.  */
   opt_pass *
-  make_pass_foo (universe &uni)
+  make_pass_foo (context *uni)
   {
     return new pass_foo(uni,
                         IF_GLOBAL_VS_SHARED(&the_foo_state,
@@ -350,7 +350,7 @@ appropriately::
   }
 
 Then the first_instance gets responsibility for creating the pass state
-and all the clones can share it, but the state is "local" to the universe,
+and all the clones can share it, but the state is "local" to the context,
 whilst staying simple and efficient for the "global state" case.
 
 If the state is GTY-marked, then the passes need to call the state's gty
@@ -361,13 +361,13 @@ More complicated arrangements
 The singleton tricks from above are widely applicable.
 
 For any kind of "state-wiring" more complicated than the above, we'll
-simply put a reference to the shared state into the universe/context
+simply put a reference to the shared state into the context/context
 object, and have the passes locate it there (either at pass creation,
 or when they run).
 
 For example::
 
-   class universe
+   class context
    {
    public:
        /* ... snip ... */
@@ -380,11 +380,11 @@ For example::
        MAYBE STATIC mudflap_state *mudflap_;
        MAYBE STATIC lower_vector_state *lower_vector_;
 
-   }; // class universe
+   }; // class context
 
 In a global-state build these state instances will be singletons and thus
 global variables.  In a shared-library build these state instances will be
-allocated when the universe is constructed.
+allocated when the context is constructed.
 
-If the state is GTY-marked, then the universe needs to call the state's gty
-hooks when the universe's gty hooks run.
+If the state is GTY-marked, then the context needs to call the state's gty
+hooks when the context's gty hooks run.

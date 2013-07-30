@@ -55,62 +55,31 @@ here and there.
 Question: if it's a branch, is it a branch in git, or a branch in svn?
 (or both, somehow?)
 
+gcc::context
+------------
+As of FIXME there is a new class `gcc::context`, which is intended to
+encapsulate the state of the compiler.
 
-Bikeshedding: "universe" vs "context"?
---------------------------------------
-We need a name for the thing that encapsulates the state of the compiler.
+The singleton instance is `g`::
 
-I've been flitting between "universe" and "context" for this name.
+   extern gcc::context *g;
 
-  * "universe" comes from the term "parallel universe" beloved of sci-fi
-    authors
-
-  * "context" is already used in several places within the code for
-    something else
-
-  * "context" sometimes makes people think of threads.  I don't see that
-    the state needs to be per-thread; it's per-client - a client could
-    have multiple threads all using one bundle-of-state (imposing a lock
-    client-side)
-
-  * "universe" nicely conveys the idea that different universes are
-    separate, that you can't share things between universes.
-
-  * "context" is the more traditional term; "universe" might seem rather
-    weird.
-
-Another bikeshed discussion is what to call the global singleton instance.
-Ideas include:
-
-  * `the_uni`
-
-  * `the_ctxt`
-
-  * `the_ctx`
-
-  * `ctx`
-
-  * `gcc`
-
-  * `g` (minimal typing; there's a `G` in `ggc-page.c`)
-
-My favorite is currently "g", for ease of debugging a shared-library build
-in gdb.
+which was chosen to minimize typing (both in code and in the debugger).
 
 Parallel Universes vs Modularity
 --------------------------------
-Many things will gain a `universe&`.  Although this is good from a
+Many things will gain a `context *`.  Although this is good from a
 state-removal perspective, there's a danger here that this could become
 a big blob, or rats nest of interdependencies, where everything in the
 compiler can access anything else in the compiler.
 
-I think that having a `universe&` where you need it is sufficiently
+I think that having a `context *` where you need it is sufficiently
 useful that a "good intentions"/"consenting adults" approach will be
 acceptable for the initial iteration of this work for mitigating
 the above risk.
 
 Ultimately we may want to pass in something more restrictive e.g. just
-a `gc_heap&` so that objects don't get tightly coupled.
+a `gc_heap *` so that objects don't get tightly coupled.
 
 
 Garbage-collection
@@ -119,16 +88,16 @@ Although there's been some talk of removing GTY, I plan to work with the
 existing code, without requiring other features to land, and that means
 dealing with GC and PCH.
 
-There are two possible ways in which universe instances could interact
+There are two possible ways in which context instances could interact
 with the GC:
 
-  (a) have the universe instances be GC-managed: all parallel universes
+  (a) have the context instances be GC-managed: all parallel contexts
       share the same heap, and rewriting the GC code to be thread-safe, or
 
-  (b) have the universe manage GC, so that the state of GC is
-      per-universe: each universe has its own GC heap, entirely
-      independent of each other universe's GC heap.  You can't share GC
-      pointers between universes.
+  (b) have the context manage GC, so that the state of GC is
+      per-context: each context has its own GC heap, entirely
+      independent of each other context's GC heap.  You can't share GC
+      pointers between contexts.
 
 I don't think (a) is feasible.
 
@@ -147,7 +116,7 @@ It would also require a substantial rewrite of PCH-handling, since PCH
 files are essentially a dump of the state of the GC-heap.
 
 It seems much simpler to me to go with (b): multiple independent GC-heaps,
-where "universe" objects sit *below* garbage-collection.
+where "context" objects sit *below* garbage-collection.
 
 Proof-of-concept patch posted as http://gcc.gnu.org/ml/gcc-patches/2013-06/msg00878.html
 
@@ -161,18 +130,18 @@ See below in "Middle-end classes" for how this looks.
 Status: Not yet ready; remaining work:
 
   * integrate the class with GTY
-  * integrate the class with "universe"
+  * integrate the class with "context"
 
 .. Note to self: my working copy for this aspect is
    `gcc-git-state-cleanup-cgraph`
 
 
-Universe-specific state
+Context-specific state
 -----------------------
 
-New file gcc/universe.h which ultimately would declare something like this::
+New file gcc/context.h which ultimately would declare something like this::
 
-   class universe
+   class context
    {
    public:
        /* Instance of the garbage collector.  */
@@ -203,31 +172,31 @@ New file gcc/universe.h which ultimately would declare something like this::
        /* Passes that have special state-handling needs.  */
        MAYBE STATIC mudflap_state *mudflap_;
 
-   }; // class universe
+   }; // class context
 
    #if GLOBAL_BUILD
-   /* Global singleton instance of the universe.  */
-   extern universe the_uni;
+   /* Global singleton instance of the context.  */
+   extern context the_uni;
    #endif
 
 (it would be initially be empty, but would be built up field by field
 as patches are accepted).
 
-universe.h will likely be included by everything, so the universe's fields
-have some indirection to avoid users of universe.h requiring other header
+context.h will likely be included by everything, so the context's fields
+have some indirection to avoid users of context.h requiring other header
 files, and thus everything requiring every header file.
 
-The "universe" instance can be thought of as the "root" object of global
-state:  if you have a `universe*` you can reach many other useful objects
+The "context" instance can be thought of as the "root" object of global
+state:  if you have a `context*` you can reach many other useful objects
 directly.  Similarly, many objects have a reference back to their
-`universe*`
+`context*`
 
 Singletons and GTY
 ^^^^^^^^^^^^^^^^^^
 Singletons would make natural GC roots, but gengtype only supports pointers
 as GC roots, not structs.
 
-I tried registering the singleton universe using `ggc_register_root_tab`,
+I tried registering the singleton context using `ggc_register_root_tab`,
 which adds it to `extra_root_vec` - but this is only used by the garbage
 collector - it isn't used by pch.
 
@@ -253,26 +222,26 @@ gengtype).
 We could add a way to add callbacks to both, but I think we need to
 specialcase the singletons inside ggc and pch, explicitly calling their
 traversal hook there at the appropriate times.
-**Hence it makes sense to have a single universe/context object even in a
+**Hence it makes sense to have a single context object even in a
 global-state build**: this is the single root struct for GGC; its traversal
 hooks lead to every other singleton being traversed.  As we move global
 variables into singletons, gt_ggc_rtab will slowly become empty: the only
-GC root will be the universe/context singleton.
+GC root will be the context singleton.
 
-How do you determine which universe you are in?
+How do you determine which context you are in?
 -----------------------------------------------
-Every pass instance "knows" which universe it is in, so every "execute"
-hook can easily determine which its universe, and put this into the
+Every pass instance "knows" which context it is in, so every "execute"
+hook can easily determine which its context, and put this into the
 per-pass state.
 
-Hence the `universe*` is easily accessed during the top-level function
+Hence the `context*` is easily accessed during the top-level function
 calls within optimization passes, and by anything that can access per-pass
 state.
 
-How do we get at universe from deep within code that doesn't have easy
+How do we get at context from deep within code that doesn't have easy
 access to it?  (e.g. helper functions and macros).
 
-LLVM solves this by having every type object have a `universe*`: you can
+LLVM solves this by having every type object have a `context*`: you can
 always easily find a type object.  This is probably too expensive
 memory-wise to be acceptable to GCC, so we need a different
 approach.
@@ -281,10 +250,10 @@ I propose we use thread-local storage for this::
 
   #if SHARED_BUILD
     /* Read a thread-local pointer: */
-     extern __thread universe *g;
+     extern __thread context *g;
   #else
      /* Access the global singleton: */
-     extern universe *g;
+     extern context *g;
   #endif
 
 This approach has the advantage of relative simplicity, and is efficient
@@ -314,7 +283,7 @@ However this is out-of-scope for this iteration.
 see http://docs.python.org/2/extending/embedding.html).
 
 A plugin that wants to interact with a shared-library build of GCC could
-potentially get at the universe through the `g` pointer above.
+potentially get at the context through the `g` pointer above.
 
 
 Tools

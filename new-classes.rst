@@ -16,7 +16,7 @@ have more than one of them::
   };
 
 This allows us to pass a heap around without having to expose the entire
-universe.
+context.
 
 The following class is handy for GTY((user)) classes that are in an
 inheritance hierarchy::
@@ -50,7 +50,7 @@ interactions:
   * `gc_managed` : allocated in a gc heap, and can own GC-references
 
   * `gc_owner` : can own GC-references, but not allocated in the gc-heap
-    (e.g. universe instances, pass state where there was a GTY, etc)
+    (e.g. context instances, pass state where there was a GTY, etc)
 
 Frontend Classes
 ^^^^^^^^^^^^^^^^
@@ -91,11 +91,11 @@ These exist in order to encapsulate the various "global_trees" fields::
 
 Pass classes
 ^^^^^^^^^^^^
-Different universes within one GCC process may want to have their own
+Different contexts within one GCC process may want to have their own
 compilation passes, so there will be a `class pipeline`, the pass manager,
-with an instance within the universe; a singleton in a non-shared build::
+with an instance within the context; a singleton in a non-shared build::
 
-   class universe
+   class context
    {
    public:
        /* ...snip... */
@@ -490,7 +490,7 @@ Callgraph::
    class GTY((user)) callgraph
    {
    public:
-      callgraph(universe &uni);
+      callgraph(context *uni);
 
     /* Public methods: */
 

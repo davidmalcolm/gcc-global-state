@@ -38,13 +38,13 @@ implementation of each method call::
 
 So we'd have something like this::
 
-  extern class universe the_uni;
+  extern class context the_uni;
 
-  class SINGLETON_IN_STATIC_BUILD(the_uni) universe
+  class SINGLETON_IN_STATIC_BUILD(the_uni) context
   {
   };
 
-For a library build where universe instances are dynamically-created, the
+For a library build where context instances are dynamically-created, the
 macro expands away to whitespace, but for a non-library build, this
 would expand to the attribute.
 
@@ -59,7 +59,7 @@ This thus:
   * other optimizations?  (e.g. "exploding" a global struct into global
     vars for its fields)
 
-I think this could be used in quite a few places e.g. for universe, for
+I think this could be used in quite a few places e.g. for context, for
 the pass manager, for the callgraph, for global_options.
 
 I'm also thinking long-term the various tables of hooks should probably
@@ -76,9 +76,9 @@ class declaration, and thus doesn't see the attribute.
 gengtype may need a little tweaking to help find the GTY markers in
 class declarations, so that it can handle code like this::
 
-  class GTY((user)) SINGLETON_IN_STATIC_BUILD(the_uni) universe
+  class GTY((user)) SINGLETON_IN_STATIC_BUILD(the_uni) context
   {
-  }; // class universe
+  }; // class context
 
 
 Another singleton-removal optimization
@@ -105,7 +105,7 @@ It gives us relatively clean header files::
    #define SINGLETON_IN_STATIC_BUILD
    #endif
 
-   class GTY((user)) SINGLETON_IN_STATIC_BUILD universe
+   class GTY((user)) SINGLETON_IN_STATIC_BUILD context
    {
    public:
        /* All of these are implicitly "static".  */
@@ -130,12 +130,12 @@ It gives us relatively clean header files::
 It does require all data members to have a definition in some source file ::
 
    #if USING_IMPLICIT_STATIC
-   gc_heap *universe::heap_;
-   callgraph *universe::cgraph_;
-   pipeline *universe::passes_;
-   struct gcc_options universe::global_options_;
-   frontend *universe::frontend_;
-   backend *universe::backend_;
+   gc_heap *context::heap_;
+   callgraph *context::cgraph_;
+   pipeline *context::passes_;
+   struct gcc_options context::global_options_;
+   frontend *context::frontend_;
+   backend *context::backend_;
    #endif
 
 Other ways to optimize singletons
@@ -298,7 +298,7 @@ Given this code::
    unsigned int
    pass_foo::execute_hook(void)
    {
-      /* Get the universe as "this->ctxt_" */
+      /* Get the context as "this->ctxt_" */
       FILE *dump_file = ctxt_.dump_file_;
 
 where `dump_file_` is a MAYBE_STATIC field of a context, I'm assuming
@@ -339,14 +339,14 @@ and this statement::
 
 where `ctxt_` is MAYBE_STATIC, this is effectively::
 
-  context& tmpA = this->ctxt_;
-  callgraph *tmpB = tmpA.cgraph_;
+  context * tmpA = this->ctxt_;
+  callgraph *tmpB = tmpA->cgraph_;
   int tmpC = tmpB->node_max_uid;
   foo (tmpC);
 
 and static on the fields in a global state build means that this is::
 
-  context& tmpA = this->ctxt_;
+  context * tmpA = this->ctxt_;
   callgraph *tmpB = context::cgraph_;
   int tmpC = callgraph::node_max_uid;
 
@@ -385,4 +385,4 @@ approach:
   * rth's approach for "per-invocation" state
 
   * the MAYBE_STATIC approach for state that needs to be referenced
-    by a pass or by the universe/context object.
+    by a pass or by the context object.
