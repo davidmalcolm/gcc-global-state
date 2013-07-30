@@ -151,7 +151,7 @@ New file gcc/context.h which ultimately would declare something like this::
        MAYBE_STATIC callgraph *cgraph_;
 
        /* Pass management.  */
-       MAYBE_STATIC pipeline *passes_;
+       MAYBE_STATIC pass_manager *passes_;
 
        /* Important objects.  */
        MAYBE_STATIC struct gcc_options global_options_;

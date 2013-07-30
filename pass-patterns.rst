@@ -8,7 +8,7 @@ be summarized by classifying passes by their "state-management"
 characteristics:
 
 * Single-instance passes vs multiple-instances passes.  For example,
-  `pass_build_cgraph_edges` only appears once in the pass pipeline, whereas
+  `pass_build_cgraph_edges` only appears once in the pass pass_manager, whereas
   `pass_copy_prop` appears in 8 places (I believe this one holds the record).
 
 * Passes that have their own source file vs those that share their source
@@ -142,9 +142,9 @@ characteristics:
 
 Proposed implementation
 -----------------------
-There will be a new `class pipeline` encapsulating pass management.
+There will be a new `class pass_manager` encapsulating pass management.
 
-http://gcc.gnu.org/ml/gcc-patches/2013-04/msg00182.html
+http://gcc.gnu.org/ml/gcc-patches/2013-07/msg01252.html
 
 Passes will become C++ classes.
 

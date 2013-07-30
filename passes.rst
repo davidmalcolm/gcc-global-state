@@ -1938,7 +1938,7 @@ so perhaps this state needs to be made a per-context thing.
 Alternatively, we could make it per-pass, and have
 `gimple_init_edge_profiler` poke at it through::
 
-  context->pipeline->pass_ipa_tree_profile
+  context->pass_manager->pass_ipa_tree_profile
 
 
 `tree-sra.c`: pass_sra_early, pass_sra, pass_early_ipa_sra
@@ -2658,7 +2658,7 @@ Plan:
     the second instance reference it, and the instance of
     `pass_lower_vector` reference it also.  To do the latter, the
     factory function for `pass_lower_vector` will need to access the first
-    instance of `pass_lower_vector_ssa` via the `pipeline`.
+    instance of `pass_lower_vector_ssa` via the `pass_manager`.
 
   * Turn functions into MAYBE_STATIC methods of the state class as
     necessary

@@ -92,8 +92,8 @@ These exist in order to encapsulate the various "global_trees" fields::
 Pass classes
 ^^^^^^^^^^^^
 Different contexts within one GCC process may want to have their own
-compilation passes, so there will be a `class pipeline`, the pass manager,
-with an instance within the context; a singleton in a non-shared build::
+compilation passes, so there will be a `class gcc::pass_manager`, with an
+instance within the context; a singleton in a non-shared build::
 
    class context
    {
@@ -101,21 +101,19 @@ with an instance within the context; a singleton in a non-shared build::
        /* ...snip... */
 
        /* Pass management.  */
-       MAYBE_STATIC pipeline *passes_;
+       MAYBE_STATIC pass_manager *passes_;
 
        /* ...snip... */
 
    };
 
-The class internals will be in a new header `pipeline.h`; the fields of
+The class internals will be in a new header `pass_manager.h`; the fields of
 this class will be created via a new `passes.def` file shared by pass
-creation describing the pass hierarchy; see the `pipeline.h` part of
-http://gcc.gnu.org/ml/gcc-patches/2013-04/msg01175.html
-for an idea of what this will look like (though other aspects of the plan
-have changed since that patch was posted).
+creation describing the pass hierarchy; see
+http://gcc.gnu.org/ml/gcc-patches/2013-07/msg01252.html
 
-This makes it relatively easy to examine the pipeline and pass instances in
-the debugger.
+This makes it relatively easy to examine the pass manager and pass instances
+in the debugger.
 
 Passes will become C++ classes so that the gate and execute hooks can refer
 to pass-specific data in a typesafe way (via "this"): they will become

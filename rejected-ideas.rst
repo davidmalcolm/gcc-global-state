@@ -141,7 +141,7 @@ could share state with it like this::
       {
         /* Locate the shared state my hardcoding a reference to a pass
            that already has it: */
-        foo_pass *reference_pass = ctxt.pipeline->pass_bar_1;
+        foo_pass *reference_pass = ctxt.passes_->pass_bar_1;
         gcc_assert (reference_pass);
         foo_state &shared_state = reference_pass->get_shared_state ();
         return new pass_bar (ctxt, shared_state);

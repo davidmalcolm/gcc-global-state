@@ -117,7 +117,7 @@ It gives us relatively clean header files::
        callgraph *cgraph_;
 
        /* Pass management.  */
-       pipeline *passes_;
+       pass_manager *passes_;
 
        /* Important objects.  */
        struct gcc_options global_options_;
@@ -132,7 +132,7 @@ It does require all data members to have a definition in some source file ::
    #if USING_IMPLICIT_STATIC
    gc_heap *context::heap_;
    callgraph *context::cgraph_;
-   pipeline *context::passes_;
+   pass_manager *context::passes_;
    struct gcc_options context::global_options_;
    frontend *context::frontend_;
    backend *context::backend_;
