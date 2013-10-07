@@ -111,18 +111,18 @@ It gives us relatively clean header files::
        /* All of these are implicitly "static".  */
 
        /* Instance of the garbage collector.  */
-       gc_heap *heap_;
+       gc_heap *m_heap;
 
        /* Instance of the callgraph.  */
-       callgraph *cgraph_;
+       callgraph *m_cgraph;
 
        /* Pass management.  */
-       pass_manager *passes_;
+       pass_manager *m_passes;
 
        /* Important objects.  */
-       struct gcc_options global_options_;
-       frontend *frontend_;
-       backend *backend_;
+       struct gcc_options m_global_options;
+       frontend *m_frontend;
+       backend *m_backend;
 
        // etc
    };
@@ -130,12 +130,12 @@ It gives us relatively clean header files::
 It does require all data members to have a definition in some source file ::
 
    #if USING_IMPLICIT_STATIC
-   gc_heap *context::heap_;
-   callgraph *context::cgraph_;
-   pass_manager *context::passes_;
-   struct gcc_options context::global_options_;
-   frontend *context::frontend_;
-   backend *context::backend_;
+   gc_heap *context::m_heap;
+   callgraph *context::m_cgraph;
+   pass_manager *context::m_passes;
+   struct gcc_options context::m_global_options;
+   frontend *context::m_frontend;
+   backend *context::m_backend;
    #endif
 
 Other ways to optimize singletons
@@ -298,33 +298,33 @@ Given this code::
    unsigned int
    pass_foo::execute_hook(void)
    {
-      /* Get the context as "this->ctxt_" */
-      FILE *dump_file = ctxt_.dump_file_;
+      /* Get the context as "this->m_ctxt" */
+      FILE *dump_file = m_ctxt.dump_file_;
 
-where `dump_file_` is a MAYBE_STATIC field of a context, I'm assuming
+where `m_dump_file` is a MAYBE_STATIC field of a context, I'm assuming
 that in a GLOBAL_STATE build the optimizer can
-identify that the `ctxt_` isn't used, and optimize away the lookups
+identify that the `m_ctxt` isn't used, and optimize away the lookups
 as equivalent to::
 
    unsigned int
    pass_foo::execute_hook(void)
    {
-      context *unused = this->ctxt;
-      FILE *dump_file = context::dump_file_;
+      context *unused = this->m_ctxt;
+      FILE *dump_file = context::m_dump_file;
 
 and simply do::
 
    unsigned int
    pass_foo::execute_hook(void)
    {
-      FILE *dump_file = context::dump_file_;
+      FILE *dump_file = context::m_dump_file;
 
 Similarly, consider chains of singletons, e.g.::
 
   class context
   {
   public:
-    MAYBE_STATIC  callgraph cgraph_;
+    MAYBE_STATIC  callgraph m_cgraph;
   };
 
   class callgraph
@@ -335,19 +335,19 @@ Similarly, consider chains of singletons, e.g.::
 
 and this statement::
 
-  foo ((/*this->*/ctxt_.cgraph_->node_max_uid);
+  foo ((/*this->*/m_ctxt->m_cgraph->node_max_uid);
 
 where `ctxt_` is MAYBE_STATIC, this is effectively::
 
-  context * tmpA = this->ctxt_;
-  callgraph *tmpB = tmpA->cgraph_;
+  context * tmpA = this->m_ctxt;
+  callgraph *tmpB = tmpA->m_cgraph;
   int tmpC = tmpB->node_max_uid;
   foo (tmpC);
 
 and static on the fields in a global state build means that this is::
 
-  context * tmpA = this->ctxt_;
-  callgraph *tmpB = context::cgraph_;
+  context * tmpA = this->m_ctxt;
+  callgraph *tmpB = context::m_cgraph;
   int tmpC = callgraph::node_max_uid;
 
 and thus tmpA and tmpB are unused, so this is effectively just::

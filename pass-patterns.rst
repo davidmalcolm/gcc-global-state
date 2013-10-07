@@ -321,23 +321,23 @@ appropriately::
   class pass_foo : public gimple_pass
   {
   public:
-    pass_foo(context *uni, pass_state *state)
-      : state_(state)
+    pass_foo (context *uni, pass_state *state)
+      : m_state (state)
     { }
 
     /* Clone the pass, sharing state.  */
     opt_pass*
     opt_pass clone ()
     {
-      return new pass_foo(uni, state);
+      return new pass_foo (uni, state);
     }
 
     /* The bulk of the work happens in the state;
        we only dereference once.  */
-    unsigned int execute () { state_->execute (); }
+    unsigned int execute () { m_state->execute (); }
 
   private:
-    foo_state *state_;
+    foo_state *m_state;
   }; // class pass_foo
 
   /* Create first instance of pass, with its own state.  */
@@ -373,12 +373,12 @@ For example::
        /* ... snip ... */
 
        /* State shared by many passes. */
-       MAYBE_STATIC struct df_d *df_;
-       MAYBE_STATIC redirect_edge_var_state *edge_vars_;
+       MAYBE_STATIC struct df_d *m_df;
+       MAYBE_STATIC redirect_edge_var_state *m_edge_vars;
 
        /* Passes that have special state-handling needs.  */
-       MAYBE STATIC mudflap_state *mudflap_;
-       MAYBE STATIC lower_vector_state *lower_vector_;
+       MAYBE STATIC mudflap_state *m_mudflap;
+       MAYBE STATIC lower_vector_state *m_lower_vector;
 
    }; // class context
 

@@ -145,32 +145,32 @@ New file gcc/context.h which ultimately would declare something like this::
    {
    public:
        /* Instance of the garbage collector.  */
-       MAYBE_STATIC gc_heap *heap_;
+       MAYBE_STATIC gc_heap *m_heap;
 
        /* Instance of the callgraph.  */
-       MAYBE_STATIC callgraph *cgraph_;
+       MAYBE_STATIC callgraph *m_cgraph;
 
        /* Pass management.  */
-       MAYBE_STATIC pass_manager *passes_;
+       MAYBE_STATIC pass_manager *m_passes;
 
        /* Important objects.  */
-       MAYBE_STATIC struct gcc_options global_options_;
-       MAYBE_STATIC frontend *frontend_;
-       MAYBE_STATIC backend *backend_;
+       MAYBE_STATIC struct gcc_options m_global_options;
+       MAYBE_STATIC frontend *m_frontend;
+       MAYBE_STATIC backend *m_backend;
 
-       MAYBE_STATIC FILE * dump_file_;
-       MAYBE_STATIC int dump_flags_;
+       MAYBE_STATIC FILE * m_dump_file;
+       MAYBE_STATIC int m_dump_flags;
 
        // etc
 
-       MAYBE_STATIC location_t input_location_;
+       MAYBE_STATIC location_t m_input_location;
 
        /* State shared by many passes. */
-       MAYBE_STATIC struct df_d *df_;
-       MAYBE_STATIC redirect_edge_var_state *edge_vars_;
+       MAYBE_STATIC struct df_d *m_df;
+       MAYBE_STATIC redirect_edge_var_state *m_edge_vars;
 
        /* Passes that have special state-handling needs.  */
-       MAYBE STATIC mudflap_state *mudflap_;
+       MAYBE STATIC mudflap_state *m_mudflap;
 
    }; // class context
 

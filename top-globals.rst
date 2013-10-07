@@ -275,7 +275,7 @@ lookup in a shared-library build, using a TLS lookup::
    #define cfun (cfun + 0)
    #else
    /* (the "+ 0" ensures it's not a lvalue, so can't be assigned to)  */
-   #define cfun (g->cfun_ + 0)
+   #define cfun (g->m_cfun + 0)
    #endif
 
 This is efficient for the global state case, but leads to thousands of
@@ -318,7 +318,7 @@ TLS CFG lookup at the top of a function, giving::
 
   struct control_flow_graph *cfg = *cfun->cfg;
 
-  if (cfg->n_basic_blocks_ <= NUM_FIXED_BLOCKS + 1)
+  if (cfg->m_n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
 
 Though the above change may give us a route there.
 

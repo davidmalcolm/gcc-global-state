@@ -63,7 +63,7 @@ These exist in order to encapsulate the various "global_trees" fields::
     frontend(gc_heap *heap);
 
   protected:
-    gc_heap *heap_;
+    gc_heap *m_heap;
 
     tree global_trees[TI_MAX];
     tree built_in_attributes[(int) ATTR_LAST];
@@ -307,7 +307,7 @@ anytime we look up pass properties (the former seems preferable).
   
   /* We should eventually make these fields private: */
   public:
-    context *ctxt_;
+    context *m_ctxt;
   
     /* Optimization pass type.  */
     enum opt_pass_type type;
